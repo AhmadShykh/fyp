@@ -1,14 +1,13 @@
 import React from "react";
-import HomePage from "./pages/HomePage";
-import ProcessPage from "./pages/ProcessPage";
-import SideBar from "./components/SideBar";
+import LoginPage from "./pages/LoginPage";
 
 const App = () => {
   return (
     <div>
       {/* <HomePage /> */}
       {/* <ProcessPage /> */}
-      <SideBar />
+      {/* <SideBar /> */}
+      <LoginPage />
     </div>
   );
 };
