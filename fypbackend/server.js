@@ -13,13 +13,9 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/secure-auth", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/secure-auth")
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
-
 // Routes
 app.use("/api/auth", authRoutes);
 
