@@ -1,5 +1,5 @@
 import React from "react";
-import SignupPage from "./pages/SignupPage";
+import HistoryPage from "./pages/HistoryPage";
 
 const App = () => {
   return (
@@ -8,7 +8,8 @@ const App = () => {
       {/* <ProcessPage /> */}
       {/* <SideBar /> */}
       {/* <LoginPage /> */}
-      <SignupPage />
+      {/* <SignupPage /> */}
+      <HistoryPage />
     </div>
   );
 };
