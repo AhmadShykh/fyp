@@ -1,5 +1,5 @@
 import React from "react";
-import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 
 const App = () => {
   return (
@@ -7,7 +7,8 @@ const App = () => {
       {/* <HomePage /> */}
       {/* <ProcessPage /> */}
       {/* <SideBar /> */}
-      <LoginPage />
+      {/* <LoginPage /> */}
+      <SignupPage />
     </div>
   );
 };
