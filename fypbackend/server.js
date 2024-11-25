@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/auth");
+const historyRoutes = require("./routes/history");
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/secure-auth
   .catch(err => console.log(err));
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/history/functions/" , historyRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
