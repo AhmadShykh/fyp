@@ -2,26 +2,28 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const History = require("../models/History");
+const User = require("../models/User"); // Assuming User model is required for `/registerWebsite`
+const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
 const router = express.Router();
 
-// Middleware to authenticate JWT
+require("dotenv").config();
+
+// Middleware to authenticate JWT from cookies
 const authenticateToken = (req, res, next) => {
-    const token = req.headers["authorization"]?.split(" ")[1];
-    if (!token)
-      return res
-        .status(401)
-        .json({ message: "Access Denied. No Token Provided." });
-  
-    try {
-      const verified = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = verified;
-      next();
-    } catch (err) {
-      console.error('Error verifying token:', err); // Log the error for debugging
-      res.status(403).json({ message: "Invalid Token" });
-    }
-  };
-  
+  const token = req.cookies?.accessToken; // Get the token from cookies
+  if (!token)
+    return res.status(401).json({ message: "Access Denied. No Token Provided." });
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (err) {
+    console.error("Error verifying token:", err); // Log the error for debugging
+    res.status(403).json({ message: "Invalid Token" });
+  }
+};
 
 // Middleware to authorize admins
 const authorizeAdmin = (req, res, next) => {
@@ -54,26 +56,27 @@ router.get(
   }
 );
 
-module.exports = router;
-
 // Register Website
-router.post("/registerWebsite", async (req, res) => {
-  const { url, id, name } = req.body;
+router.post("/registerWebsite", authenticateToken, async (req, res) => {
+  const { url, name } = req.body;
 
   try {
-    // Check if `id` is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    // Get user ID from token
+    const userId = req.user.id;
+
+    // Check if `userId` is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid User ID" });
     }
 
-    // Find user by MongoDB `_id`
-    const userExists = await User.findOne({ _id: id });
+    // Find user by MongoDB `_id` to verify existence
+    const userExists = await User.findById(userId);
     if (!userExists) {
-      return res.status(404).json({ message: "User does not exists " + id });
+      return res.status(404).json({ message: "User does not exist" });
     }
 
     // Save website to history
-    const website = new History({ url, id, name });
+    const website = new History({ url, id: userId, name });
     await website.save();
 
     res.status(201).json({ message: "Website registered successfully" });
@@ -82,4 +85,4 @@ router.post("/registerWebsite", async (req, res) => {
   }
 });
 
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InNvbWVfdXNlcl9pZCIsInJvbGUiOiJhZG1pbiJ9.R5Ywyz6voZLpQros7wDSOvIT1sjd7m-aprzdFtvGd1c
+module.exports = router;
