@@ -65,4 +65,18 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+// Controller: User Logout
+const logout = (req, res) => {
+  try {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development",
+      sameSite: "strict",
+    });
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+module.exports = { signup, login, logout };
