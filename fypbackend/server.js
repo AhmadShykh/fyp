@@ -4,6 +4,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/authRoutes");
 const historyRoutes = require("./routes/historyRoutes");
+const scanRoutes = require("./routes/scanRoutes");
+
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/secure-auth
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/history/functions/" , historyRoutes);
+app.use("/api/scan", scanRoutes);
+
 
 // Start Server
 const PORT = process.env.PORT || 5000;
