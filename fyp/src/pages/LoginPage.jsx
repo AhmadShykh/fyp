@@ -1,4 +1,4 @@
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap CSS is imported
+import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 
 const LoginPage = () => {
