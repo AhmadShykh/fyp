@@ -77,6 +77,9 @@ const SignupPage = () => {
           <button type="submit" className="btn btn-primary w-100">
             Sign Up
           </button>
+          <button type="submit" className="btn btn-secondary w-100 mt-2">
+            Back to Login
+          </button>
           {message && (
             <p className="mt-3 text-center text-success">{message}</p>
           )}

@@ -1,15 +1,18 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       // Simulated API call
+
       setMessage("Login successful");
     } catch (error) {
       setMessage("Something went wrong");
@@ -19,6 +22,7 @@ const LoginPage = () => {
   const handleSignUp = () => {
     // Redirect or perform Sign Up action
     setMessage("Redirecting to Sign Up...");
+    navigate("/SignupPage");
   };
 
   return (

@@ -10,75 +10,68 @@ import UserIcon from "../assets/user-icon.svg";
 const SideBar = () => {
   const [selected, setSelected] = useState("dashboard");
 
-  const navigate = useNavigate(); // React Router hook for navigation
+  const navigate = useNavigate();
 
   const handleNavigation = (page) => {
     setSelected(page);
+    console.log("selected page ", selected);
     if (page === "dashboard") {
       navigate("/dashboard");
     } else if (page === "history") {
-      navigate("/history"); // Navigate to HistoryPage
+      navigate("/HistoryPage");
     }
   };
 
   return (
-    <div style={{ backgroundColor: "blue" }}>
-      <div className="row">
-        <div className="bg-dark col-auto col-md-1 min-vh-100 d-flex flex-column align-items-center justify-content-center">
-          <div>
-            <ul className="nav nav-pills flex-column">
-              <li className="nav-item">
-                <a
-                  href="#"
-                  className={`nav-link ${
-                    selected === "dashboard" ? "active" : ""
-                  }`}
-                  onClick={() => setSelected("dashboard")}
-                >
-                  <img
-                    src={DashboardIcon}
-                    className="img-fluid"
-                    style={{ width: "35px", height: "35px" }}
-                  />
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  href="/HistoryPage"
-                  className={`nav-link ${
-                    selected === "history" ? "active" : ""
-                  }`}
-                  onClick={() => setSelected("history")}
-                >
-                  <img
-                    src={HistoryIcon}
-                    className="img-fluid"
-                    style={{ width: "35px", height: "35px" }}
-                  />
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div className="dropdown dropup">
+    <div className="bg-dark col-auto col-md-1 min-vh-100 d-flex flex-column align-items-center justify-content-center">
+      <div>
+        <ul className="nav nav-pills flex-column">
+          <li className="nav-item">
             <a
-              className="dropdown-toggle"
-              type="button"
-              id="triggerId"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+              href="#"
+              className={`nav-link ${selected === "dashboard" ? "active" : ""}`}
+              onClick={() => handleNavigation("dashboard")}
             >
               <img
-                src={UserIcon}
+                src={DashboardIcon}
                 className="img-fluid"
                 style={{ width: "35px", height: "35px" }}
               />
             </a>
-            <div className="dropdown-menu" aria-labelledby="triggerId">
-              <a className="dropdown-item" href="#">
-                Logout
-              </a>
-            </div>
-          </div>
+          </li>
+          <li className="nav-item">
+            <a
+              href="/HistoryPage"
+              className={`nav-link ${selected === "history" ? "active" : ""}`}
+              onClick={() => handleNavigation("history")}
+            >
+              <img
+                src={HistoryIcon}
+                className="img-fluid"
+                style={{ width: "35px", height: "35px" }}
+              />
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div className="dropdown dropup">
+        <a
+          className="dropdown-toggle"
+          type="button"
+          id="triggerId"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <img
+            src={UserIcon}
+            className="img-fluid"
+            style={{ width: "35px", height: "35px" }}
+          />
+        </a>
+        <div className="dropdown-menu" aria-labelledby="triggerId">
+          <a className="dropdown-item" href="#">
+            Logout
+          </a>
         </div>
       </div>
     </div>
