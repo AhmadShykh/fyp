@@ -1,10 +1,10 @@
 const express = require("express");
-const { scanWebsite } = require("../controllers/scanController");
+const { scanWebsiteAndGeneratePDF } = require("../controllers/scanController");
 
 const router = express.Router();
 
 // Route for scanning websites
-router.post("/", scanWebsite);
+router.post("/", scanWebsiteAndGeneratePDF);
 
 module.exports = router;
     
