@@ -1,3 +1,4 @@
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,13 +7,24 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Simulated API call
+      const res = await axios.post(
+        "https://fyp-ecmq.onrender.com/api/auth/login",
+        {
+          email,
+          password,
+        },
+      );
 
+      if (res) {
+        console.log("Login response ", res);
+        navigate("/HomePage");
+      }
       setMessage("Login successful");
     } catch (error) {
       setMessage("Something went wrong");
@@ -20,13 +32,12 @@ const LoginPage = () => {
   };
 
   const handleSignUp = () => {
-    // Redirect or perform Sign Up action
     setMessage("Redirecting to Sign Up...");
     navigate("/SignupPage");
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
+    <div className="d-flex justify-content-center align-items-center vh-100 w-100">
       <form
         onSubmit={handleLogin}
         className="p-4 border rounded shadow"

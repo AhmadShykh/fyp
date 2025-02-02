@@ -1,7 +1,9 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import SideBar from "./components/SideBar";
 import HistoryPage from "./pages/HistoryPage";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import ProcessPage from "./pages/ProcessPage";
 import SignupPage from "./pages/SignupPage";
 
 function App() {
@@ -10,9 +12,11 @@ function App() {
       <div className="d-flex">
         <SideBar />
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/LoginPage" element={<LoginPage />} />
           <Route path="/HistoryPage" element={<HistoryPage />} />
           <Route path="/SignupPage" element={<SignupPage />} />
+          <Route path="/ProcessPage" element={<ProcessPage />} />
         </Routes>
       </div>
     </Router>

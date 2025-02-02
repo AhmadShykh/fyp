@@ -26,7 +26,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="d-flex vh-100" style={{ backgroundColor: "red" }}>
+    <div className="d-flex vh-100 w-100">
       <div className="d-flex justify-content-center align-items-center flex-grow-1">
         <form
           onSubmit={handleSignup}
