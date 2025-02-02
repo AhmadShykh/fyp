@@ -34,7 +34,11 @@ const HistoryPage = () => {
                   backgroundColor: "#AFAFAF33",
                 }}
               >
-                <div className="card-body d-flex align-items-center justify-content-center">
+                <div
+                  className="card-body d-flex align-items-center justify-content-center touchable"
+                  onClick={() => console.log("Card Clicked!")}
+                  role="button"
+                >
                   <h5 className="card-title">{company}</h5>
                 </div>
               </div>
