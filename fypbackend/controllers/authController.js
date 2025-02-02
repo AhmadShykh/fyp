@@ -53,6 +53,7 @@ const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "development",
       sameSite: "strict",
+      expires: new Date(Date.now() + 3600000),
       maxAge: 3600000,
     });
 
@@ -79,4 +80,28 @@ const logout = (req, res) => {
   }
 };
 
-module.exports = { signup, login, logout };
+
+// Middleware to check if user is logged in
+const getUserData = async (req, res, next) => {
+  try {
+    const user = req.user;
+    
+    res.status(200).json({ 
+      message: "Login successful", 
+      user: { id: user.id, name: user.name, email: user.email, contact: user.contact,role: user.role } 
+    });
+
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: "Invalid token. Please log in again." });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: "Session expired. Please log in again." });
+    }
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
+module.exports = { signup, login, logout ,getUserData };

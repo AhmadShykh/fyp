@@ -6,6 +6,8 @@ const authRoutes = require("./routes/authRoutes");
 const historyRoutes = require("./routes/historyRoutes");
 const scanRoutes = require("./routes/scanRoutes");
 
+const cookieParser = require('cookie-parser');
+
 
 dotenv.config();
 
@@ -14,6 +16,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/secure-auth")

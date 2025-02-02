@@ -6,6 +6,7 @@ require("dotenv").config();
 const authenticateToken = (req, res, next) => {
   const token = req.cookies?.accessToken; // Get the token from cookies
   if (!token)
+
     return res.status(401).json({ message: "Access Denied. No Token Provided." });
 
   try {
@@ -13,8 +14,13 @@ const authenticateToken = (req, res, next) => {
     req.user = verified;
     next();
   } catch (err) {
-    console.error("Error verifying token:", err); // Log the error for debugging
-    res.status(403).json({ message: "Invalid Token" });
+    if (err.name === "TokenExpiredError") {
+      // Handle expired token specifically
+      return res.status(401).json({ message: "Token Expired. Please log in again." });
+    } else {
+      // Handle other JWT errors (e.g., invalid token)
+      return res.status(403).json({ message: "Invalid Token" });
+    }
   }
 };
 
