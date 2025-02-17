@@ -29,7 +29,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="d-flex flex-column justify-content-center align-items-center">
+    <div className="d-flex flex-column justify-content-center align-items-center w-100">
       <img src={Logo} alt="App Logo" className="img-fluid" />
       <input
         type="text"

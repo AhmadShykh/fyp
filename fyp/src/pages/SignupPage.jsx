@@ -13,7 +13,7 @@ const SignupPage = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("/api/auth/signup", {
+      await axios.post("/api/auth/signup", {
         name,
         email,
         contact,

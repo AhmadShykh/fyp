@@ -14,9 +14,9 @@ const SideBar = () => {
 
   const handleNavigation = (page) => {
     setSelected(page);
-    console.log("selected page ", selected);
+
     if (page === "dashboard") {
-      navigate("/dashboard");
+      navigate("/DashboardPage");
     } else if (page === "history") {
       navigate("/HistoryPage");
     }

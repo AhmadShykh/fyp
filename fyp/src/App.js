@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import SideBar from "./components/SideBar";
+import DashboardPage from "./pages/DashboardPage";
 import HistoryPage from "./pages/HistoryPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -17,6 +18,7 @@ function App() {
           <Route path="/HistoryPage" element={<HistoryPage />} />
           <Route path="/SignupPage" element={<SignupPage />} />
           <Route path="/ProcessPage" element={<ProcessPage />} />
+          <Route path="/DashboardPage" element={<DashboardPage />} />
         </Routes>
       </div>
     </Router>
