@@ -55,7 +55,8 @@ const performScan = async (url) => {
 
   try {
     const zapResponse = await axios.post(`${VM_SERVER_BASE_URL}/scan`, { url, tool: "zap" });
-    results.owasp_zap_output = zapResponse.data.output || "No results";
+    results.owasp_zap_output = zapResponse.data.results || "No results";
+    results.owasp_zap_json_output = zapResponse.data.json_data || "No results";
   } catch (error) {
     results.owasp_zap_output = `ZAP Scan Failed: ${error.response?.data || error.message}`;
   }
