@@ -1,6 +1,27 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const SubscriptionSchema = new mongoose.Schema({
+  plan: {
+    type: String,
+    enum: ["basic", "advanced", "premium"],
+    default: "basic", // Default plan is free
+  },
+  status: {
+    type: String,
+    enum: ["active", "cancelled"],
+    default: "active",
+  },
+  expiresAt: {
+    type: Date,
+    default: null, // No expiration for the free plan
+  },
+  stripeSubscriptionId: {
+    type: String,
+    default: null, // Will be populated for paid plans
+  },
+});
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -27,6 +48,10 @@ const UserSchema = new mongoose.Schema({
   isAdmin: {
     type: Boolean,
     default: false, // Default value for new users
+  },
+  subscription: {
+    type: SubscriptionSchema,
+    default: () => ({ plan: "basic", status: "active" }), // Default to free plan
   },
 });
 

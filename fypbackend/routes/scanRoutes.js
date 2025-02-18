@@ -7,4 +7,3 @@ const router = express.Router();
 router.post("/", scanWebsiteAndGeneratePDF);
 
 module.exports = router;
-    

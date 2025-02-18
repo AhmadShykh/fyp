@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET ;
 
 // Controller: User Signup
 const signup = async (req, res) => {
@@ -88,7 +88,7 @@ const getUserData = async (req, res, next) => {
     
     res.status(200).json({ 
       message: "Login successful", 
-      user: { id: user.id, name: user.name, email: user.email, contact: user.contact,role: user.role } 
+      user: { id: user.id, name: user.name, email: user.email, contact: user.contact,role: user.role,subsPlan:user.subscription } 
     });
 
   } catch (error) {
