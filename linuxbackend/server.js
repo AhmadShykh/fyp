@@ -25,69 +25,55 @@ app.post("/scan", async (req, res) => {
 
   try {
     if (tool === "zap") {
-  // Define the file path
-  const reportPath = path.join(process.cwd(), "baseline-report.json");
+      // Define the file path
+      const reportPath = path.join(process.cwd(), "baseline-report.json");
 
-  // Run ZAP Baseline Scan in a Docker Container
-  const zapCommand = `
-    docker run --privileged -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-stable zap-baseline.py \
-    -t ${url} \
-    -r baseline-report.html \
-    -x baseline-report.xml \
-    -J baseline-report.json
-  `;
+      // Run ZAP Baseline Scan in a Docker Container
+      const zapCommand = `
+        docker run --privileged -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-stable zap-baseline.py \
+        -t ${url} \
+        -J baseline-report.json
+      `;
 
-  exec(zapCommand, (error, stdout, stderr) => {
-    if (error) {
-      const exitCode = error.code;
-      if (exitCode === 2) {
-        return res.status(200).json({
-          message: "ZAP Baseline Scan completed with warnings",
-          output: stdout,
-          details: stderr,
-        });
-      } else if (exitCode === 1) {
-        return res.status(200).json({
-          message: "ZAP Baseline Scan completed with failures",
-          output: stdout,
-          details: stderr,
-        });
-      } else {
-        console.error(`ZAP Baseline Scan Error: ${error.message}`);
-        return res.status(500).json({
-          message: "Error running ZAP Baseline Scan",
-          error: error.message,
-          details: stderr,
-        });
-      }
-    }
+      exec(zapCommand, (error, stdout, stderr) => {
+      
+        if (error) {
+          if(error.code != 2 && error.code != 1)
+          {
+             console.error(`ZAP Baseline Scan Error: ${error.message}`);
+              return res.status(500).json({
+              message: "Error running ZAP Baseline Scan",
+              error: error.message,
+             });
+          }
+          
+        }
 
-    // Read the JSON file and return its contents
-    fs.readFile(reportPath, "utf8", (err, data) => {
-      if (err) {
-        console.error(`Error reading JSON report: ${err.message}`);
-        return res.status(500).json({
-          message: "Error reading ZAP Baseline Scan JSON report",
-          error: err.message,
-        });
-      }
+        console.log(`ZAP Baseline Scan Output:\n${stdout}`);
 
-      try {
-        const jsonData = JSON.parse(data);
-        return res.status(200).json({
-          message: "ZAP Baseline Scan completed successfully",
-          report: jsonData,
+        // Read the JSON file and return its contents
+        fs.readFile(reportPath, "utf8", (err, data) => {
+          if (err) {
+            console.error(`Error reading JSON report: ${err.message}`);
+            return res.status(500).json({
+              message: "Error reading ZAP Baseline Scan JSON report",
+              error: err.message,
+            });
+          }
+
+          try {
+            const jsonData = JSON.parse(data);
+            return res.status(200).json({results:stdout, json_data: jsonData});
+          } catch (parseError) {
+            console.error(`Error parsing JSON report: ${parseError.message}`);
+            return res.status(500).json({
+              message: "Error parsing ZAP Baseline Scan JSON report",
+              error: parseError.message,
+            });
+          }
         });
-      } catch (parseError) {
-        console.error(`Error parsing JSON report: ${parseError.message}`);
-        return res.status(500).json({
-          message: "Error parsing ZAP Baseline Scan JSON report",
-          error: parseError.message,
-        });
-      }
-    });
-  });
-} else if (tool === "nmap") {
+      });
+    } else if (tool === "nmap") {
       // Extract the hostname or IP for Nmap
       const sanitizedUrl = extractHostname(url);
 
@@ -98,11 +84,7 @@ app.post("/scan", async (req, res) => {
           return res.status(500).json({ message: "Error running Nmap", error: error.message });
         }
 
-        if (stderr) {
-          console.error(`Nmap Stderr: ${stderr}`);
-        }
-
-        console.log(`Nmap Output: ${stdout}`);
+        console.log(`Nmap Scan Output:\n${stdout}`);
         return res.status(200).json({ tool: "nmap", results: stdout });
       });
     } else if (tool === "metasploit") {
@@ -113,11 +95,7 @@ app.post("/scan", async (req, res) => {
           return res.status(500).json({ message: "Error running Metasploit", error: error.message });
         }
 
-        if (stderr) {
-          console.error(`Metasploit Stderr: ${stderr}`);
-        }
-
-        console.log(`Metasploit Output: ${stdout}`);
+        console.log(`Metasploit Scan Output:\n${stdout}`);
         return res.status(200).json({ tool: "metasploit", results: stdout });
       });
     } else {
