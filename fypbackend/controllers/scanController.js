@@ -1,8 +1,5 @@
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-const FormData = require("form-data");
-const { generatePDFAndUpload } = require("../middleware/pdfGenerator");  // Assume you have a separate file for PDF creation
+const { generatePDFAndUpload } = require("../middleware/pdfGenerator");
 require("dotenv").config();
 
 // VM Server Configuration
@@ -17,100 +14,62 @@ const scanWebsiteAndGeneratePDF = async (req, res) => {
   }
 
   try {
-    res.setHeader("Content-Type", "text/plain");
-    res.write("Starting the scan process...\n");
+    // Perform scans and get results
+    const scanResults = await performScan(url);
 
-    // Scan Process with live streaming results
-    const scanResults = await performScan(res, url);
+    // Get LLM response
+    const llmResponse = await getLLMResponse(scanResults);
 
-    // Step 1: Send live scan results (already done above using res.write)
-
-    // Step 2: Send scan results to LLM
-    const llmResponse = await getLLMResponse(res,scanResults);
+    // Generate and upload PDF
     const pdfUrl = await generatePDFAndUpload(llmResponse);
 
-    // Step 4: Send PDF URL to the frontend
-    return res.end(`Scan completed! You can download the PDF report from: ${pdfUrl}`);
+    // Send JSON response
+    return res.json({
+      message: "Scan completed!",
+      pdf_url: pdfUrl,
+      scan_results: scanResults,
+      llm_summary: llmResponse,
+    });
   } catch (error) {
     console.error("Error during scan and processing:", error.message);
-    res.write("Error during scan and processing:\n");
-    res.write(`${error.message}\n`);
-
-    return res.end(); // Ensures the function stops execution
+    return res.status(500).json({ error: error.message });
   }
 };
 
+const performScan = async (url) => {
+  const results = {};
 
-const performScan = async (res, url) => {
-  let results = "";
-
-  // Perform Metasploit Scan
-  res.write("Starting Metasploit Scan...\n");
   try {
     const metasploitResponse = await axios.post(`${VM_SERVER_BASE_URL}/scan`, { url, tool: "metasploit" });
-    const metasploitResults = JSON.stringify(metasploitResponse.data.results, null, 2);
-    results += `Metasploit Scan Results:\n${metasploitResults}\n\n`;
-    res.write("Metasploit Scan Completed...\n");
-    res.write(`${results}\n`);
+    results.metasploit_output = metasploitResponse.data.results || "No results";
   } catch (error) {
-    results += `Metasploit Scan Failed:\n${error.response?.data || error.message}\n\n`;
-    res.write("Metasploit Scan Failed...\n");
+    results.metasploit_output = `Metasploit Scan Failed: ${error.response?.data || error.message}`;
   }
 
-  // Perform Nmap Scan
-  res.write("Starting Nmap Scan...\n");
   try {
     const nmapResponse = await axios.post(`${VM_SERVER_BASE_URL}/scan`, { url, tool: "nmap" });
-    const nmapResults = JSON.stringify(nmapResponse.data.results, null, 2);
-    results += `Nmap Scan Results:\n${nmapResults}\n\n`;
-    res.write("Nmap Scan Completed...\n");
-    res.write(`${results}\n`);
-    
-
+    results.nmap_output = nmapResponse.data.results || "No results";
   } catch (error) {
-    results += `Nmap Scan Failed:\n${error.response?.data || error.message}\n\n`;
-    res.write("Nmap Scan Failed...\n");
+    results.nmap_output = `Nmap Scan Failed: ${error.response?.data || error.message}`;
   }
 
-  // Perform ZAP Baseline Scan
-  res.write("Starting ZAP Baseline Scan...\n");
   try {
     const zapResponse = await axios.post(`${VM_SERVER_BASE_URL}/scan`, { url, tool: "zap" });
-    const zapResults = JSON.stringify(zapResponse.data.output, null, 2);
-    results += `ZAP Baseline Scan Results:\n${zapResults}\n\n`;
-    res.write("ZAP Scan Completed...\n");
-    res.write(`${results}\n`);
-
+    results.owasp_zap_output = zapResponse.data.output || "No results";
   } catch (error) {
-    results += `ZAP Scan Failed:\n${error.response?.data || error.message}\n\n`;
-    res.write("ZAP Scan Failed...\n");
+    results.owasp_zap_output = `ZAP Scan Failed: ${error.response?.data || error.message}`;
   }
 
-  // Prepare the context for Flask API
-  const context = {
-    metasploit_output: results.split("Metasploit Scan Results:")[1]?.split("Nmap Scan Results:")[0]?.trim(),
-    nmap_output: results.split("Nmap Scan Results:")[1]?.split("ZAP Baseline Scan Results:")[0]?.trim(),
-    owasp_zap_output: results.split("ZAP Baseline Scan Results:")[1]?.trim(),
-  };
-
-  
-
-  return context; // Return all scan results after the scan process
+  return results;
 };
 
-
-const getLLMResponse = async (res,context) => {
-  // Send the results to the Flask API to get a user-friendly summary
+const getLLMResponse = async (context) => {
   try {
     const response = await axios.post(`${process.env.LLM_URL}/generate`, context);
-    res.write(`Generated Summary:\n${response.data.summary}\n`);
-
     return response.data.summary;
-
   } catch (error) {
-    res.write("Error generating summary:\n" + error.message);
+    return `Error generating summary: ${error.message}`;
   }
 };
-
 
 module.exports = { scanWebsiteAndGeneratePDF };
