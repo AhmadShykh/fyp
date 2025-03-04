@@ -15,7 +15,18 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json());
+
+// 🔹 Skip `express.json()` for the Stripe webhook route
+
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/subscription/webhook") {
+    next(); // Skip JSON parsing
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
+
 app.use(cors());
 app.use(cookieParser());
 

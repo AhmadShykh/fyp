@@ -47,15 +47,16 @@ const login = async (req, res) => {
 
     const role = user.isAdmin ? "admin" : "user";
 
-    const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "2d" });
 
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development",
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      expires: new Date(Date.now() + 3600000),
-      maxAge: 3600000,
+      expires: new Date(Date.now() + 172800000), // 2 days
+      maxAge: 172800000, // 2 days in milliseconds
     });
+    
 
     res.status(200).json({ 
       message: "Login successful", 
