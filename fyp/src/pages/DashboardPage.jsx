@@ -9,7 +9,7 @@ const DashboardPage = () => {
   return (
     <div
       style={{
-        backgroundColor: "black",
+        backgroundColor: "#EDECFE",
         width: "100%",
         padding: 32,
       }}
@@ -19,13 +19,16 @@ const DashboardPage = () => {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
+          padding: 56,
         }}
       >
         <div>
           <div style={{ width: "100%", padding: 16 }}>
             {/* Imported Component */}
             <AlertDistributionChart />
-            <div style={{ flexDirection: "row", display: "flex" }}>
+            <div
+              style={{ flexDirection: "row", display: "flex", marginTop: 16 }}
+            >
               <GraphLegend percentage={12} label="High" count={2} width={120} />
               <GraphLegend
                 percentage={29}
@@ -49,13 +52,88 @@ const DashboardPage = () => {
                 width={180}
               />
             </div>
-            Risk Score:
-            <RiskScoreChart percentage={21} />
+
+            <div style={{ marginTop: 32 }}>
+              Risk Score:
+              <RiskScoreChart percentage={21} />
+            </div>
           </div>
         </div>
 
-        <div>
-          <TopVulnerabilitiesChart />
+        <div style={{ width: "100%" }}>
+          <div style={{ width: "100%", padding: 16 }}>
+            <TopVulnerabilitiesChart />
+            <div
+              style={{ flexDirection: "row", display: "flex", marginTop: 16 }}
+            >
+              <GraphLegend percentage={12} label="High" count={2} width={150} />
+              <GraphLegend percentage={12} label="High" count={2} width={150} />
+              <GraphLegend percentage={12} label="High" count={2} width={150} />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 32 }}>Alerts:</div>
+
+          <div
+            style={{
+              flexDirection: "row",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              Timeline
+              <div>{new Date().toLocaleDateString()}</div>
+              <div>{new Date().toLocaleDateString()}</div>
+              <div>{new Date().toLocaleDateString()}</div>
+              <div>{new Date().toLocaleDateString()}</div>
+            </div>
+
+            <div style={{ marginLeft: 4, textAlign: "center" }}>
+              Rule
+              <div>el solva</div>
+              <div>el solva</div>
+              <div>el solva</div>
+              <div>el solva</div>
+            </div>
+
+            <div
+              style={{
+                textAlign: "center",
+              }}
+            >
+              Severity
+              <div>Low</div>
+              <div>Low</div>
+              <div>Low</div>
+              <div>Low</div>
+            </div>
+
+            <div style={{ marginLeft: 4, textAlign: "center" }}>
+              Risk Score
+              <div>25</div>
+              <div>25</div>
+              <div>25</div>
+              <div>25</div>
+            </div>
+
+            <div style={{ marginLeft: 4, textAlign: "center" }}>
+              Reason
+              <div>Elsa asduhnkasnj......</div>
+              <div>Elsa asduhnkasnj......</div>
+              <div>Elsa asduhnkasnj......</div>
+              <div>Elsa asduhnkasnj......</div>
+            </div>
+
+            <div style={{ marginLeft: 4, textAlign: "center" }}>
+              Hostname
+              <div>El molesta</div>
+              <div>El molesta</div>
+              <div>El molesta</div>
+              <div>El molesta</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
