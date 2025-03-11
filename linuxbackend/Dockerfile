@@ -1,15 +1,13 @@
 # Use Kali Linux as the base image
 FROM kalilinux/kali-rolling
 
-# Install necessary packages, including Docker and tools
+# Install necessary tools (without Docker)
 RUN apt update && apt install -y \
-    docker.io \
     nodejs \
     npm \
     curl \
     nmap \
-    metasploit-framework \
-    zaproxy && \
+    metasploit-framework && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 USER root
@@ -29,6 +27,6 @@ COPY . .
 # Expose the port your server will run on
 EXPOSE 3000
 
-# Start Docker service and the Node.js server
-CMD service docker start && node server.js
+# Start the Node.js server
+CMD ["node", "server.js"]
 
