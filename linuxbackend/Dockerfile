@@ -12,7 +12,6 @@ RUN apt update && apt install -y \
     zaproxy && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-
 USER root
 
 # Set working directory inside the container
