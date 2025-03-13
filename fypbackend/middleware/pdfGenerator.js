@@ -1,62 +1,90 @@
-const { PDFDocument, StandardFonts } = require('pdf-lib');
+const PDFDocument = require('pdfkit');
 const axios = require('axios');
+const fs = require('fs');
 require('dotenv').config();
 
-// Filestack API Key from your .env
 const FILESTACK_API_KEY = process.env.FILESTACK_API_KEY;
 
-// Function to create a PDF from the given content
-const generatePDFAndUpload = async (content) => {
-  try {
-    // Create a new PDF document
-    const pdfDoc = await PDFDocument.create();
+/**
+ * Function to generate a security vulnerability report PDF and upload it.
+ * @param {Object} reportData - The security report summary from the LLM.
+ * @returns {Promise<string>} - The Filestack URL of the uploaded PDF.
+ */
+const generatePDFAndUpload = async (reportData) => {
+    try {
+        const summary = reportData;
+        if (!summary || typeof summary !== 'string') {
+            throw new Error('Invalid report data: summary is missing or not a string.');
+        }
 
-    // Add a page to the document
-    const page = pdfDoc.addPage([600, 800]); // Set page size
-    const { width, height } = page.getSize();
+        // Create a PDF document in memory
+        const doc = new PDFDocument();
+        let buffers = [];
 
-    // Embed the font correctly
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontSize = 12;
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', async function () {
+            const pdfBuffer = Buffer.concat(buffers);
+            const pdfUrl = await uploadToFilestack(pdfBuffer);
+            console.log('PDF uploaded successfully:', pdfUrl);
+        });
 
-    // Add the content to the page
-    page.drawText(content, { x: 50, y: height - 50, font, size: fontSize });
+        // PDF Formatting
+        doc.font('Helvetica-Bold').fontSize(20).text('Security Vulnerability Report', { align: 'center' });
+        doc.moveDown();
+        doc.font('Helvetica').fontSize(14).text('Summary of Issues:', { underline: true });
+        doc.moveDown();
 
-    // Serialize the PDF document to bytes
-    const pdfBytes = await pdfDoc.save();
+        // Dynamically format each line
+        summary.split("\n").forEach(line => {
+            let boldMatches = line.match(/\*\*(.*?)\*\*/g);
+            
+            if (boldMatches) {
+                // Split the line into segments based on **bold** parts
+                let splitText = line.split(/\*\*(.*?)\*\*/);
+                splitText.forEach((segment, index) => {
+                    if (boldMatches.includes(`**${segment}**`)) {
+                        doc.font('Helvetica-Bold').text(segment, { continued: true });
+                    } else {
+                        doc.font('Helvetica').text(segment, { continued: true });
+                    }
+                });
+                doc.text(" "); // Ensure new line
+            } else {
+                doc.font('Helvetica').text(line);
+            }
+        });
 
-    // Upload the PDF file to Filestack and return the file URL
-    const pdfUrl = await uploadToFilestack(pdfBytes);
-    return pdfUrl;
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    throw new Error('Failed to generate the PDF.');
-  }
+        // Finalize the document
+        doc.end();
+
+    } catch (error) {
+        console.error('Error generating or uploading PDF:', error);
+        throw new Error('Failed to generate the PDF.');
+    }
 };
 
-// Function to upload the PDF file to Filestack using raw binary data
-const uploadToFilestack = async (pdfBytes) => {
-  try {
-    // Convert pdfBytes to a Buffer
-    const buffer = Buffer.from(pdfBytes);
-
-    // Upload the file to Filestack using raw binary data (HTTP POST)
-    const response = await axios.post(
-      `https://www.filestackapi.com/api/store/S3?key=${FILESTACK_API_KEY}`,
-      buffer, {
-        headers: {
-          'Content-Type': 'application/pdf',  // Set the correct MIME type for PDF
-          'Content-Length': buffer.length,    // Set the correct content length
-        },
-      }
-    );
-
-    // Return the URL of the uploaded PDF file
-    return response.data.url;
-  } catch (error) {
-    console.error('Error uploading PDF to Filestack:', error);
-    throw new Error('Failed to upload the PDF.');
-  }
+/**
+ * Function to upload the PDF to Filestack
+ * @param {Buffer} pdfBuffer - The generated PDF as a buffer
+ * @returns {Promise<string>} - The URL of the uploaded PDF
+ */
+const uploadToFilestack = async (pdfBuffer) => {
+    try {
+        const response = await axios.post(
+            `https://www.filestackapi.com/api/store/S3?key=${FILESTACK_API_KEY}`,
+            pdfBuffer,
+            {
+                headers: {
+                    'Content-Type': 'application/pdf',
+                    'Content-Length': pdfBuffer.length,
+                },
+            }
+        );
+        return response.data.url;
+    } catch (error) {
+        console.error('Error uploading PDF to Filestack:', error);
+        throw new Error('Failed to upload the PDF.');
+    }
 };
 
 module.exports = { generatePDFAndUpload };
