@@ -1,3 +1,4 @@
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,13 +8,15 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const isValidUrl = (string) => {
     const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
     return regex.test(string.trim());
   };
 
-  const handleScanClick = () => {
+  const handleScanClick = async () => {
+    console.log("scan clicked");
     if (!url.trim()) {
       setError("Please enter a URL.");
       return;
@@ -24,8 +27,17 @@ const HomePage = () => {
       return;
     }
 
+    try {
+      const res = await axios.post("http://localhost:8080/api/scan", { url });
+
+      if (res?.data) {
+        console.log("Response Data:", res.data);
+        navigate("/ProcessPage", { state: { scanResult: res.data } }); // Pass data to ProcessPage
+      }
+    } catch (error) {
+      setMessage("Something went wrong");
+    }
     setError("");
-    navigate("/ProcessPage");
   };
 
   return (

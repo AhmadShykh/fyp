@@ -1,71 +1,88 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const ProcessPage = () => {
-  const lengthyText = `
-  Searching on google.com.mx
------------------------------------------------------------ 100%
-Analyzing results
-Best responses
-Domain: www.bluicesoftware.com
-Whois: www.bluicesoftware.com
-Gathering construction information for: www.bluicesoftware.com
+  const location = useLocation();
+  const scanData = location.state?.scanResult;
 
-Server Information
------------------------------------------------------------ 100%
-Directory enumeration for: www.bluicesoftware.com
------------------------------------------------------------ 100%
-Structure of: www.bluicesoftware.com
-Relevant found addresses
-Web scraping: gathering relevant information
-External Links
-Redirects
-Analyzing downloadable files
-Blog titles for SEO information
-Structure of: www.store.bluicesoftware.com
-Information on: www.store.bluicesoftware.com/products
-Analyzing security
-`;
-
-  const [displayedText, setDisplayedText] = useState("");
   const [progress, setProgress] = useState(0);
-  const [headerText, setHeaderText] = useState("Processing...");
+  const [headerText, setHeaderText] = useState("Processing Scan...");
   const scrollRef = useRef(null);
+  const [scanResults, setScanResults] = useState({
+    metasploit: "",
+    nmap: "",
+    owaspZap: "",
+  });
 
   useEffect(() => {
-    let index = 0;
-    const totalLength = lengthyText.length;
-    const interval = setInterval(() => {
-      if (index < totalLength) {
-        setDisplayedText((prev) => prev + lengthyText[index]);
-        index++;
+    if (!scanData) {
+      setHeaderText("No scan data available.");
+      return;
+    }
 
-        setProgress(((index / totalLength) * 100).toFixed(0));
+    let progressSteps = 0;
+    const totalSteps = 3; // Metasploit, Nmap, OWASP ZAP
 
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-      } else {
-        clearInterval(interval);
-        setHeaderText("Tech for you");
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const processScanResults = async () => {
+      // Process Metasploit Output
+      if (scanData.scan_results?.metasploit_output) {
+        setScanResults((prev) => ({
+          ...prev,
+          metasploit: scanData.scan_results.metasploit_output,
+        }));
+        progressSteps++;
+        setProgress(((progressSteps / totalSteps) * 100).toFixed(0));
+        await delay(1000);
       }
-    }, 30);
-    return () => clearInterval(interval);
-  }, [lengthyText]);
+
+      // Process Nmap Output
+      if (scanData.scan_results?.nmap_output) {
+        setScanResults((prev) => ({
+          ...prev,
+          nmap: scanData.scan_results.nmap_output,
+        }));
+        progressSteps++;
+        setProgress(((progressSteps / totalSteps) * 100).toFixed(0));
+        await delay(1000);
+      }
+
+      // Process OWASP ZAP Output
+      if (scanData.scan_results?.owasp_zap_output) {
+        setScanResults((prev) => ({
+          ...prev,
+          owaspZap: scanData.scan_results.owasp_zap_output.includes("Failed")
+            ? "⚠️ OWASP ZAP Scan Failed!"
+            : scanData.scan_results.owasp_zap_output,
+        }));
+        progressSteps++;
+        setProgress(((progressSteps / totalSteps) * 100).toFixed(0));
+        await delay(1000);
+      }
+
+      setHeaderText("Scan Completed Successfully!");
+    };
+
+    processScanResults();
+  }, [scanData]);
 
   return (
     <div
       style={{
-        padding: "100px",
+        padding: "50px",
         fontFamily: "Arial, sans-serif",
         height: "100vh",
         width: "100%",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        backgroundColor: "#f9f9f9",
       }}
     >
       <h1>{headerText}</h1>
 
+      {/* Progress Bar */}
       <div
         style={{
           margin: "20px 0",
@@ -86,19 +103,56 @@ Analyzing security
         />
       </div>
 
+      {/* Scan Results */}
       <div
         ref={scrollRef}
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "10px",
+          padding: "15px",
           border: "1px solid #ccc",
           borderRadius: "5px",
+          background: "#fff",
         }}
       >
-        <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
-          {displayedText}
-        </p>
+        <h3>🔍 Metasploit Scan</h3>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            background: "#f3f3f3",
+            padding: "10px",
+            borderRadius: "5px",
+          }}
+        >
+          {scanResults.metasploit || "Loading..."}
+        </pre>
+
+        <h3>🛠️ Nmap Scan</h3>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            background: "#f3f3f3",
+            padding: "10px",
+            borderRadius: "5px",
+          }}
+        >
+          {scanResults.nmap || "Loading..."}
+        </pre>
+
+        <h3>⚠️ OWASP ZAP Scan</h3>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            background: scanResults.owaspZap.includes("Failed")
+              ? "#ffe6e6"
+              : "#f3f3f3",
+            padding: "10px",
+            borderRadius: "5px",
+            color: scanResults.owaspZap.includes("Failed") ? "red" : "black",
+          }}
+        >
+          {scanResults.owaspZap || "Loading..."}
+        </pre>
       </div>
     </div>
   );
