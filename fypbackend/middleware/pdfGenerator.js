@@ -21,10 +21,11 @@ const generatePDFAndUpload = async (reportData) => {
         const doc = new PDFDocument();
         let buffers = [];
 
+        let pdfUrl = '';
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', async function () {
             const pdfBuffer = Buffer.concat(buffers);
-            const pdfUrl = await uploadToFilestack(pdfBuffer);
+            pdfUrl = await uploadToFilestack(pdfBuffer);
             console.log('PDF uploaded successfully:', pdfUrl);
         });
 
@@ -56,6 +57,7 @@ const generatePDFAndUpload = async (reportData) => {
 
         // Finalize the document
         doc.end();
+        return pdfUrl;
 
     } catch (error) {
         console.error('Error generating or uploading PDF:', error);
