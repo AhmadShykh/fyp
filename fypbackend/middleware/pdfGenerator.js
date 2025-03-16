@@ -11,58 +11,63 @@ const FILESTACK_API_KEY = process.env.FILESTACK_API_KEY;
  * @returns {Promise<string>} - The Filestack URL of the uploaded PDF.
  */
 const generatePDFAndUpload = async (reportData) => {
-    try {
-        const summary = reportData;
-        if (!summary || typeof summary !== 'string') {
-            throw new Error('Invalid report data: summary is missing or not a string.');
-        }
-
-        // Create a PDF document in memory
-        const doc = new PDFDocument();
-        let buffers = [];
-
-        let pdfUrl = '';
-        doc.on('data', buffers.push.bind(buffers));
-        doc.on('end', async function () {
-            const pdfBuffer = Buffer.concat(buffers);
-            pdfUrl = await uploadToFilestack(pdfBuffer);
-            console.log('PDF uploaded successfully:', pdfUrl);
-        });
-
-        // PDF Formatting
-        doc.font('Helvetica-Bold').fontSize(20).text('Security Vulnerability Report', { align: 'center' });
-        doc.moveDown();
-        doc.font('Helvetica').fontSize(14).text('Summary of Issues:', { underline: true });
-        doc.moveDown();
-
-        // Dynamically format each line
-        summary.split("\n").forEach(line => {
-            let boldMatches = line.match(/\*\*(.*?)\*\*/g);
-            
-            if (boldMatches) {
-                // Split the line into segments based on **bold** parts
-                let splitText = line.split(/\*\*(.*?)\*\*/);
-                splitText.forEach((segment, index) => {
-                    if (boldMatches.includes(`**${segment}**`)) {
-                        doc.font('Helvetica-Bold').text(segment, { continued: true });
-                    } else {
-                        doc.font('Helvetica').text(segment, { continued: true });
-                    }
-                });
-                doc.text(" "); // Ensure new line
-            } else {
-                doc.font('Helvetica').text(line);
+    return new Promise((resolve, reject) => {
+        try {
+            const summary = reportData;
+            if (!summary || typeof summary !== 'string') {
+                throw new Error('Invalid report data: summary is missing or not a string.');
             }
-        });
 
-        // Finalize the document
-        doc.end();
-        return pdfUrl;
+            // Create a PDF document in memory
+            const doc = new PDFDocument();
+            let buffers = [];
 
-    } catch (error) {
-        console.error('Error generating or uploading PDF:', error);
-        throw new Error('Failed to generate the PDF.');
-    }
+            doc.on('data', buffers.push.bind(buffers));
+            doc.on('end', async function () {
+                try {
+                    const pdfBuffer = Buffer.concat(buffers);
+                    const pdfUrl = await uploadToFilestack(pdfBuffer); // Wait for upload to finish
+                    // console.log('PDF uploaded successfully:', pdfUrl);
+                    resolve(pdfUrl); // Resolve the promise with the URL
+                } catch (uploadError) {
+                    console.error('Error uploading PDF:', uploadError);
+                    reject(new Error('Failed to upload the PDF.'));
+                }
+            });
+
+            // PDF Formatting
+            doc.font('Helvetica-Bold').fontSize(20).text('Security Vulnerability Report', { align: 'center' });
+            doc.moveDown();
+            doc.font('Helvetica').fontSize(14).text('Summary of Issues:', { underline: true });
+            doc.moveDown();
+
+            // Dynamically format each line
+            summary.split("\n").forEach(line => {
+                let boldMatches = line.match(/\*\*(.*?)\*\*/g);
+                
+                if (boldMatches) {
+                    // Split the line into segments based on **bold** parts
+                    let splitText = line.split(/\*\*(.*?)\*\*/);
+                    splitText.forEach((segment, index) => {
+                        if (boldMatches.includes(`**${segment}**`)) {
+                            doc.font('Helvetica-Bold').text(segment, { continued: true });
+                        } else {
+                            doc.font('Helvetica').text(segment, { continued: true });
+                        }
+                    });
+                    doc.text(" "); // Ensure new line
+                } else {
+                    doc.font('Helvetica').text(line);
+                }
+            });
+
+            // Finalize the document
+            doc.end();
+        } catch (error) {
+            console.error('Error generating or uploading PDF:', error);
+            reject(new Error('Failed to generate the PDF.'));
+        }
+    });
 };
 
 /**
