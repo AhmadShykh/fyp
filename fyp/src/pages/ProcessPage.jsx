@@ -13,6 +13,7 @@ const ProcessPage = () => {
     nmap: "",
     owaspZap: "",
   });
+  const [pdfUrl, setPdfUrl] = useState("");
 
   useEffect(() => {
     if (!scanData) {
@@ -59,6 +60,11 @@ const ProcessPage = () => {
         progressSteps++;
         setProgress(((progressSteps / totalSteps) * 100).toFixed(0));
         await delay(1000);
+      }
+
+      // Set PDF URL if available
+      if (scanData.pdf_url) {
+        setPdfUrl(scanData.pdf_url);
       }
 
       setHeaderText("Scan Completed Successfully!");
@@ -153,6 +159,41 @@ const ProcessPage = () => {
         >
           {scanResults.owaspZap || "Loading..."}
         </pre>
+
+        {/* PDF Section */}
+        {pdfUrl && (
+          <div style={{ marginTop: "20px" }}>
+            <h3>📄 Scan Report PDF</h3>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+              }}
+            >
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  textDecoration: "none",
+                  color: "#4AA8FF",
+                  fontWeight: "bold",
+                }}
+              >
+                View PDF Report
+              </a>
+              <span>or</span>
+              <iframe
+                src={pdfUrl}
+                width="100%"
+                height="500px"
+                style={{ border: "1px solid #ccc", borderRadius: "5px" }}
+                title="Scan Report PDF"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
