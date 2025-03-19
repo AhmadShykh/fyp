@@ -1,13 +1,14 @@
 # Use Kali Linux as the base image
 FROM kalilinux/kali-rolling
 
-# Install necessary tools (without Docker)
+# Install necessary tools (including Docker)
 RUN apt update && apt install -y \
     nodejs \
     npm \
     curl \
     nmap \
-    metasploit-framework && \
+    metasploit-framework \
+    docker.io && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 USER root
