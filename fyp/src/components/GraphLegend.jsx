@@ -5,7 +5,7 @@ const GraphLegend = ({ percentage, label, count, width = 100 }) => {
     <div
       style={{
         backgroundColor: "white",
-        width: width, // Allow width to be dynamic
+        width: width,
         height: 60,
         borderRadius: 8,
         marginTop: 16,
@@ -16,11 +16,10 @@ const GraphLegend = ({ percentage, label, count, width = 100 }) => {
           flexDirection: "row",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center", // Center content vertically
+          alignItems: "center",
           padding: 8,
         }}
       >
-        {/* Percentage Box */}
         <div
           style={{
             width: 40,
@@ -35,7 +34,6 @@ const GraphLegend = ({ percentage, label, count, width = 100 }) => {
           {percentage}%
         </div>
 
-        {/* Label & Count */}
         <div>
           <div>{label}</div>
           <div>{count}</div>

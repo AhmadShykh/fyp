@@ -19,6 +19,19 @@ const DashboardPage = () => {
   const { alertDistribution, riskScore, topVulnerabilities, alertDetails } =
     zapData;
 
+  const highPercentage = Math.round(
+    (alertDistribution.High / alertDetails.length) * 100,
+  );
+  const mediumPercentage = Math.round(
+    (alertDistribution.Medium / alertDetails.length) * 100,
+  );
+  const lowPercentage = Math.round(
+    (alertDistribution.Low / alertDetails.length) * 100,
+  );
+  const informationalPercentage = Math.round(
+    (alertDistribution.Informational / alertDetails.length) * 100,
+  );
+
   return (
     <div
       style={{
@@ -42,42 +55,43 @@ const DashboardPage = () => {
               style={{ flexDirection: "row", display: "flex", marginTop: 16 }}
             >
               <GraphLegend
-                percentage={
-                  (alertDistribution.High / alertDetails.length) * 100
-                }
+                percentage={highPercentage}
                 label="High"
                 count={alertDistribution.High}
                 width={120}
               />
+              <div style={{ width: "3%" }} />
               <GraphLegend
-                percentage={
-                  (alertDistribution.Medium / alertDetails.length) * 100
-                }
+                percentage={mediumPercentage}
                 label="Medium"
                 count={alertDistribution.Medium}
                 width={120}
               />
+              <div style={{ width: "3%" }} />
               <GraphLegend
-                percentage={(alertDistribution.Low / alertDetails.length) * 100}
+                percentage={lowPercentage}
                 label="Low"
                 count={alertDistribution.Low}
                 width={120}
               />
+              <div style={{ width: "3%" }} />
             </div>
             <div style={{ flexDirection: "row", display: "flex" }}>
               <GraphLegend
-                percentage={
-                  (alertDistribution.Informational / alertDetails.length) * 100
-                }
+                percentage={informationalPercentage}
                 label="Informational"
                 count={alertDistribution.Informational}
                 width={180}
               />
             </div>
 
-            <div style={{ marginTop: 32 }}>
+            <div
+              style={{
+                marginTop: 32,
+              }}
+            >
               Risk Score:
-              <RiskScoreChart percentage={riskScore} />
+              <RiskScoreChart percentage={Math.round(riskScore)} />
             </div>
           </div>
         </div>

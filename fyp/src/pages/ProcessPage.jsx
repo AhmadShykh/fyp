@@ -12,16 +12,14 @@ const ProcessPage = () => {
   const [scanResults, setScanResults] = useState({
     metasploit: "",
     nmap: "",
-    owaspZap: null, // Initialize as null or an empty object
+    owaspZap: null,
   });
   const [pdfUrl, setPdfUrl] = useState("");
-  const [zapData, setZapData] = useState(null); // State to store extracted ZAP data
+  const [zapData, setZapData] = useState(null);
 
-  // Function to extract data from OWASP ZAP output
   const extractZapData = (owaspZapOutput) => {
     const alerts = owaspZapOutput.site[0].alerts;
 
-    // Count alerts by risk level
     const alertDistribution = {
       High: alerts.filter((alert) => alert.riskcode === "3").length,
       Medium: alerts.filter((alert) => alert.riskcode === "2").length,
@@ -29,23 +27,20 @@ const ProcessPage = () => {
       Informational: alerts.filter((alert) => alert.riskcode === "0").length,
     };
 
-    // Calculate risk score (example: High = 3, Medium = 2, Low = 1, Informational = 0)
     const riskScore =
       alertDistribution.High * 3 +
       alertDistribution.Medium * 2 +
       alertDistribution.Low * 1;
 
-    // Top vulnerabilities (sorted by risk level)
     const topVulnerabilities = alerts
       .sort((a, b) => b.riskcode - a.riskcode)
       .slice(0, 3)
       .map((alert) => alert.name);
 
-    // Alert details
     const alertDetails = alerts.map((alert) => ({
       rule: alert.name,
       severity: ["Informational", "Low", "Medium", "High"][alert.riskcode],
-      riskScore: alert.riskcode * 10, // Example calculation
+      riskScore: alert.riskcode * 10,
       reason: alert.desc,
       hostname: owaspZapOutput.site[0]["@host"],
     }));
@@ -65,12 +60,11 @@ const ProcessPage = () => {
     }
 
     let progressSteps = 0;
-    const totalSteps = 3; // Metasploit, Nmap, OWASP ZAP
+    const totalSteps = 3;
 
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const processScanResults = async () => {
-      // Process Metasploit Output
       if (scanData.scan_results?.metasploit_output) {
         setScanResults((prev) => ({
           ...prev,
@@ -81,7 +75,6 @@ const ProcessPage = () => {
         await delay(1000);
       }
 
-      // Process Nmap Output
       if (scanData.scan_results?.nmap_output) {
         setScanResults((prev) => ({
           ...prev,
@@ -105,7 +98,6 @@ const ProcessPage = () => {
         await delay(1000);
       }
 
-      // Set PDF URL if available
       if (scanData.pdf_url) {
         setPdfUrl(scanData.pdf_url);
       }
@@ -116,7 +108,6 @@ const ProcessPage = () => {
     processScanResults();
   }, [scanData]);
 
-  // Navigate to Dashboard with ZAP data
   const handleNavigateToDashboard = () => {
     if (zapData) {
       navigate("/DashboardPage", { state: { zapData } });
@@ -140,7 +131,6 @@ const ProcessPage = () => {
     >
       <h1>{headerText}</h1>
 
-      {/* Progress Bar */}
       <div
         style={{
           margin: "20px 0",
@@ -161,7 +151,6 @@ const ProcessPage = () => {
         />
       </div>
 
-      {/* Scan Results */}
       <div
         ref={scrollRef}
         style={{
@@ -202,14 +191,14 @@ const ProcessPage = () => {
           style={{
             whiteSpace: "pre-wrap",
             background: scanResults.owaspZap?.site?.[0]?.alerts?.some(
-              (alert) => alert.riskcode === "3", // Check for high-risk alerts
+              (alert) => alert.riskcode === "3",
             )
               ? "#ffe6e6"
               : "#f3f3f3",
             padding: "10px",
             borderRadius: "5px",
             color: scanResults.owaspZap?.site?.[0]?.alerts?.some(
-              (alert) => alert.riskcode === "3", // Check for high-risk alerts
+              (alert) => alert.riskcode === "3",
             )
               ? "red"
               : "black",
@@ -218,7 +207,6 @@ const ProcessPage = () => {
           {JSON.stringify(scanResults.owaspZap, null, 2) || "Loading..."}
         </pre>
 
-        {/* PDF Section */}
         {pdfUrl && (
           <div style={{ marginTop: "20px" }}>
             <h3>📄 Scan Report PDF</h3>
@@ -253,7 +241,6 @@ const ProcessPage = () => {
           </div>
         )}
 
-        {/* Button to Navigate to Dashboard */}
         <div style={{ marginTop: "20px" }}>
           <button
             onClick={handleNavigateToDashboard}
