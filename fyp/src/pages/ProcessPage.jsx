@@ -93,13 +93,13 @@ const ProcessPage = () => {
       }
 
       // Process OWASP ZAP Output
-      if (scanData.scan_results?.owasp_zap_json_output) {
-        const zapOutput = scanData.scan_results.owasp_zap_json_output;
+      if (scanData.scan_results?.owasp_zap_output) {
+        const zapOutput = scanData.scan_results.owasp_zap_output;
         setScanResults((prev) => ({
           ...prev,
           owaspZap: zapOutput,
         }));
-        const extractedZapData = extractZapData(zapOutput); // Extract ZAP data
+        const extractedZapData = extractZapData(scanData.scan_results.owasp_zap_json_output); // Extract ZAP data
         setZapData(extractedZapData); // Store extracted ZAP data
         progressSteps++;
         setProgress(((progressSteps / totalSteps) * 100).toFixed(0));
