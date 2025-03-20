@@ -9,7 +9,7 @@ const HomePage = () => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false); // Loader state
+  const [loading, setLoading] = useState(false);
 
   const isValidUrl = (string) => {
     const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
@@ -28,7 +28,7 @@ const HomePage = () => {
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     setError("");
 
     try {
@@ -41,7 +41,7 @@ const HomePage = () => {
     } catch (error) {
       setMessage("Something went wrong");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -54,12 +54,11 @@ const HomePage = () => {
         placeholder="Paste URL"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        disabled={loading} // Disable input while loading
+        disabled={loading}
       />
       {error && <p className="text-danger mb-3">{error}</p>}
       {message && <p className="text-danger mb-3">{message}</p>}
 
-      {/* Show loader when API call is in progress */}
       {loading ? (
         <div className="spinner-border text-primary mb-3" role="status">
           <span className="visually-hidden">Loading...</span>

@@ -24,7 +24,7 @@ const AlertDistributionChart = () => {
     labels: ["False Positive", "Informational", "Low", "Medium", "High"],
     datasets: [
       {
-        data: [1, 2, 3, 4, 5, 6, 7, 8], // Adjusted data to match labels
+        data: [1, 2, 3, 4, 5, 6, 7, 8],
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,

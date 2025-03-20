@@ -8,27 +8,27 @@ const RiskScoreChart = ({ percentage = 21 }) => {
   const data = {
     datasets: [
       {
-        data: [percentage, 100 - percentage], // Filled and empty part
-        backgroundColor: ["#6a5acd", "#e0e0e0"], // Purple and gray
+        data: [percentage, 100 - percentage],
+        backgroundColor: ["#6a5acd", "#e0e0e0"],
         borderWidth: 0,
       },
     ],
   };
 
   const options = {
-    cutout: "70%", // Controls inner circle size
-    rotation: 270, // Starts from top
-    circumference: 180, // Creates a half-circle effect
+    cutout: "70%",
+    rotation: 270,
+    circumference: 180,
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: false }, // Hide default tooltip
+      tooltip: { enabled: false },
     },
   };
 
   return (
     <div style={{ position: "relative", width: 200, height: 200 }}>
       <Doughnut data={data} options={options} />
-      {/* Centered Text */}
+
       <div
         style={{
           position: "absolute",
