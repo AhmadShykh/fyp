@@ -1,11 +1,24 @@
-import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
+import { useLocation } from "react-router-dom";
 import AlertDistributionChart from "../components/AlertDistributionChart";
 import GraphLegend from "../components/GraphLegend";
 import RiskScoreChart from "../components/RiskScoreChart";
 import TopVulnerabilitiesChart from "../components/TopVulnerabilitiesChart";
 
 const DashboardPage = () => {
+  const location = useLocation();
+  const { zapData } = location.state || {
+    zapData: {
+      alertDistribution: { High: 0, Medium: 0, Low: 0, Informational: 0 },
+      riskScore: 0,
+      topVulnerabilities: [],
+      alertDetails: [],
+    },
+  };
+
+  const { alertDistribution, riskScore, topVulnerabilities, alertDetails } =
+    zapData;
+
   return (
     <div
       style={{
@@ -24,54 +37,56 @@ const DashboardPage = () => {
       >
         <div>
           <div style={{ width: "100%", padding: 16 }}>
-            {/* Imported Component */}
-            <AlertDistributionChart />
+            <AlertDistributionChart data={alertDistribution} />
             <div
               style={{ flexDirection: "row", display: "flex", marginTop: 16 }}
             >
-              <GraphLegend percentage={12} label="High" count={2} width={120} />
               <GraphLegend
-                percentage={29}
-                label="Medium"
-                count={5}
+                percentage={
+                  (alertDistribution.High / alertDetails.length) * 100
+                }
+                label="High"
+                count={alertDistribution.High}
                 width={120}
               />
-              <GraphLegend percentage={35} label="Low" count={6} width={120} />
+              <GraphLegend
+                percentage={
+                  (alertDistribution.Medium / alertDetails.length) * 100
+                }
+                label="Medium"
+                count={alertDistribution.Medium}
+                width={120}
+              />
+              <GraphLegend
+                percentage={(alertDistribution.Low / alertDetails.length) * 100}
+                label="Low"
+                count={alertDistribution.Low}
+                width={120}
+              />
             </div>
             <div style={{ flexDirection: "row", display: "flex" }}>
               <GraphLegend
-                percentage={6}
+                percentage={
+                  (alertDistribution.Informational / alertDetails.length) * 100
+                }
                 label="Informational"
-                count={2}
-                width={180}
-              />
-              <GraphLegend
-                percentage={18}
-                label="False Positive"
-                count={5}
+                count={alertDistribution.Informational}
                 width={180}
               />
             </div>
 
             <div style={{ marginTop: 32 }}>
               Risk Score:
-              <RiskScoreChart percentage={21} />
+              <RiskScoreChart percentage={riskScore} />
             </div>
           </div>
         </div>
 
         <div style={{ width: "100%" }}>
           <div style={{ width: "100%", padding: 16 }}>
-            <TopVulnerabilitiesChart />
-            <div
-              style={{ flexDirection: "row", display: "flex", marginTop: 16 }}
-            >
-              <GraphLegend percentage={12} label="High" count={2} width={150} />
-              <GraphLegend percentage={12} label="High" count={2} width={150} />
-              <GraphLegend percentage={12} label="High" count={2} width={150} />
-            </div>
+            <TopVulnerabilitiesChart data={topVulnerabilities} />
           </div>
-
+          {/* 
           <div style={{ marginTop: 32 }}>Alerts:</div>
 
           <div
@@ -84,56 +99,46 @@ const DashboardPage = () => {
           >
             <div>
               Timeline
-              <div>{new Date().toLocaleDateString()}</div>
-              <div>{new Date().toLocaleDateString()}</div>
-              <div>{new Date().toLocaleDateString()}</div>
-              <div>{new Date().toLocaleDateString()}</div>
+              {alertDetails.map((alert, index) => (
+                <div key={index}>{new Date().toLocaleDateString()}</div>
+              ))}
             </div>
 
             <div style={{ marginLeft: 4, textAlign: "center" }}>
               Rule
-              <div>el solva</div>
-              <div>el solva</div>
-              <div>el solva</div>
-              <div>el solva</div>
+              {alertDetails.map((alert, index) => (
+                <div key={index}>{alert.rule}</div>
+              ))}
             </div>
 
-            <div
-              style={{
-                textAlign: "center",
-              }}
-            >
+            <div style={{ textAlign: "center" }}>
               Severity
-              <div>Low</div>
-              <div>Low</div>
-              <div>Low</div>
-              <div>Low</div>
+              {alertDetails.map((alert, index) => (
+                <div key={index}>{alert.severity}</div>
+              ))}
             </div>
 
             <div style={{ marginLeft: 4, textAlign: "center" }}>
               Risk Score
-              <div>25</div>
-              <div>25</div>
-              <div>25</div>
-              <div>25</div>
+              {alertDetails.map((alert, index) => (
+                <div key={index}>{alert.riskScore}</div>
+              ))}
             </div>
 
             <div style={{ marginLeft: 4, textAlign: "center" }}>
               Reason
-              <div>Elsa asduhnkasnj......</div>
-              <div>Elsa asduhnkasnj......</div>
-              <div>Elsa asduhnkasnj......</div>
-              <div>Elsa asduhnkasnj......</div>
+              {alertDetails.map((alert, index) => (
+                <div key={index}>{alert.reason}</div>
+              ))}
             </div>
 
             <div style={{ marginLeft: 4, textAlign: "center" }}>
               Hostname
-              <div>El molesta</div>
-              <div>El molesta</div>
-              <div>El molesta</div>
-              <div>El molesta</div>
+              {alertDetails.map((alert, index) => (
+                <div key={index}>{alert.hostname}</div>
+              ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
