@@ -1,7 +1,40 @@
 from flask import Flask, request, jsonify
-import ollama  # Requires 'pip install ollama'
+import ollama
+from g4f.client import Client
+import time
 
 app = Flask(__name__)
+
+
+def generate_summary(tool_name, tool_output, explanation_type):
+    context = f"""
+    You are a cybersecurity expert helping to interpret {tool_name} results.
+    Please explain the findings in a way that a non-technical user can understand and keep.
+    Explain everything like you are directly providing a professional report. So don't use phrases like "Sure! Let's break down the Metasploit results in a
+way that's easy to understand for someone without
+a technical background."
+
+    {tool_name} Output:
+    {tool_output}
+
+    Your task is to write the response in a well-structured manner based on the tool:
+
+    - **Metasploit Output:** Explain the vulnerabilities detected, their impact, and how to fix them.
+    - **Nmap Output:** Explain open ports, their security risks, and provide recommendations for securing them.
+    - **OWASP ZAP Output:** Provide a detailed analysis of each test (both pass and fail). For failed tests, explain the vulnerability, its effects, and step-by-step solutions in a non-technical manner.
+
+    Please use simple, non-technical language to ensure clarity.
+    """
+
+    client = Client()
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": context}],
+        web_search=False
+    )
+
+    return response.choices[0].message.content
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -11,33 +44,41 @@ def generate():
     owasp_zap_output = data.get('owasp_zap_output', '')
 
     if not metasploit_output or not nmap_output or not owasp_zap_output:
-        return jsonify({"error": "Please provide all required outputs: metasploit_output, nmap_output, owasp_zap_output."}), 400
+        return jsonify(
+            {"error": "Please provide all required outputs: metasploit_output, nmap_output, owasp_zap_output."}), 400
 
-    # Prepare the context for the model to interpret
-    context = f"""
-    You are a cybersecurity expert helping to interpret vulnerability assessment results.
-    The following outputs are from different tools used to scan the website for security issues. Please explain the findings in a explained way, so a non-technical user can understand what is wrong with their website and where the issues are. 
+    # Generate summaries separately
+    metasploit_summary = generate_summary("Metasploit", metasploit_output, "vulnerability_explanation")
+    time.sleep(2)  # Prevent rate-limiting issues
 
-    Metasploit Output:
-    {metasploit_output}
+    nmap_summary = generate_summary("Nmap", nmap_output, "port_security")
+    time.sleep(2)
 
-    Nmap Output:
-    {nmap_output}
+    zap_summary = generate_summary("OWASP ZAP", owasp_zap_output, "detailed_test_analysis")
 
-    OWASP ZAP Output:
-    {owasp_zap_output}
+    # Concatenate all summaries into a final report
+    final_summary = f"""
 
-    Your task is to write your response in a way like we are generating a report on the vulnerabilities. First talk about the metasploit output in detail in the manner we discussed, then talk about the nmap output, then in the end explain each vulnerability from zap in the following format
-    1. Explain the vulnerability 
-    2. Its effects on the website 
-    3. Solutions user can take to solve them.
+    ** Metasploit Analysis **
+
+    {metasploit_summary}
+
+
+
+    ** Nmap Analysis **
     
-    Please explain in non-technical language.
-    """
-    # Request the model to generate a summary based on the outputs
-    response = ollama.chat(model='mistral', messages=[{"role": "user", "content": context}])
+    {nmap_summary}
 
-    return jsonify({"summary": response['message']['content']})
+    ** OWASP ZAP Analysis **
+
+    {zap_summary}
+
+
+
+
+    """
+
+    return jsonify({"summary": final_summary})
 
 
 if __name__ == '__main__':

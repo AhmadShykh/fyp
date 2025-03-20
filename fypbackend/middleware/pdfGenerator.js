@@ -27,7 +27,6 @@ const generatePDFAndUpload = async (reportData) => {
                 try {
                     const pdfBuffer = Buffer.concat(buffers);
                     const pdfUrl = await uploadToFilestack(pdfBuffer); // Wait for upload to finish
-                    // console.log('PDF uploaded successfully:', pdfUrl);
                     resolve(pdfUrl); // Resolve the promise with the URL
                 } catch (uploadError) {
                     console.error('Error uploading PDF:', uploadError);
@@ -38,25 +37,34 @@ const generatePDFAndUpload = async (reportData) => {
             // PDF Formatting
             doc.font('Helvetica-Bold').fontSize(20).text('Security Vulnerability Report', { align: 'center' });
             doc.moveDown();
-            doc.font('Helvetica').fontSize(14).text('Summary of Issues:', { underline: true });
-            doc.moveDown();
 
-            // Dynamically format each line
             summary.split("\n").forEach(line => {
-                let boldMatches = line.match(/\*\*(.*?)\*\*/g);
-                
-                if (boldMatches) {
-                    // Split the line into segments based on **bold** parts
-                    let splitText = line.split(/\*\*(.*?)\*\*/);
-                    splitText.forEach((segment, index) => {
-                        if (boldMatches.includes(`**${segment}**`)) {
+                line = line.trim();
+
+                // Handle Headings
+                if (line.startsWith("### ")) {
+                    doc.moveDown().font('Helvetica-Bold').fontSize(16).text(line.replace("### ", ""));
+                } else if (line.startsWith("#### ")) {
+                    doc.moveDown().font('Helvetica-Bold').fontSize(14).text(line.replace("#### ", ""));
+                }
+                // Handle Bold Text
+                else if (/\*\*(.*?)\*\*/.test(line)) {
+                    let formattedText = line.replace(/\*\*(.*?)\*\*/g, (match, p1) => `\x01${p1}\x02`); // Mark bold text
+                    formattedText.split(/\x01(.*?)\x02/).forEach((segment, index) => {
+                        if (index % 2 === 1) {
                             doc.font('Helvetica-Bold').text(segment, { continued: true });
                         } else {
                             doc.font('Helvetica').text(segment, { continued: true });
                         }
                     });
-                    doc.text(" "); // Ensure new line
-                } else {
+                    doc.text(" "); // Move to the next line
+                }
+                // Handle Bullet Points
+                else if (line.startsWith("- ") || line.startsWith("• ")) {
+                    doc.font('Helvetica').text(`• ${line.substring(2)}`, { indent: 20 });
+                }
+                // Normal Text
+                else {
                     doc.font('Helvetica').text(line);
                 }
             });

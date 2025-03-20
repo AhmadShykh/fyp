@@ -29,11 +29,21 @@ app.post("/scan", async (req, res) => {
       const reportPath = path.join(process.cwd(), "baseline-report.json");
 
       // Run ZAP Baseline Scan in a Docker Container
-      const zapCommand = `
-        docker run --privileged -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-stable zap-baseline.py \
-        -t ${url} \
-        -J baseline-report.json
-      `;
+      const zapContainerName = "zap-scanner";
+
+	const zapCommand = `
+	  if [ "$(docker ps -a -q -f name=${zapContainerName})" ]; then
+	    echo "ZAP container exists.";
+	    if [ ! "$(docker ps -q -f name=${zapContainerName})" ]; then
+	      echo "ZAP container is stopped. Restarting...";
+	      docker start ${zapContainerName};
+	    fi
+	  else
+	    echo "Creating new ZAP container...";
+	    docker run --user root -d --name ${zapContainerName} --privileged -v $(pwd):/zap/wrk/:rw -p 8080:8080 -t zaproxy/zap-stable;
+	  fi
+	  docker exec  ${zapContainerName} zap-baseline.py -t ${url} -J baseline-report.json
+	`;
 
       exec(zapCommand, (error, stdout, stderr) => {
       
