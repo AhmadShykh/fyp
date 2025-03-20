@@ -94,10 +94,9 @@ const ProcessPage = () => {
 
       // Process OWASP ZAP Output
       if (scanData.scan_results?.owasp_zap_output) {
-        const zapOutput = scanData.scan_results.owasp_zap_output;
         setScanResults((prev) => ({
           ...prev,
-          owaspZap: zapOutput,
+          owaspZap: scanData.scan_results.owasp_zap_output,
         }));
         const extractedZapData = extractZapData(scanData.scan_results.owasp_zap_json_output); // Extract ZAP data
         setZapData(extractedZapData); // Store extracted ZAP data
