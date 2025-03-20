@@ -9,7 +9,10 @@ app = Flask(__name__)
 def generate_summary(tool_name, tool_output, explanation_type):
     context = f"""
     You are a cybersecurity expert helping to interpret {tool_name} results.
-    Please explain the findings in a way that a non-technical user can understand.
+    Please explain the findings in a way that a non-technical user can understand and keep.
+    Explain everything like you are directly providing a professional report. So don't use phrases like "Sure! Let's break down the Metasploit results in a
+way that's easy to understand for someone without
+a technical background."
 
     {tool_name} Output:
     {tool_output}
