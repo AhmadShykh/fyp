@@ -11,6 +11,7 @@ const extractHostname = (url) => {
   try {
     return new URL(url).hostname;
   } catch (err) {
+    console.warn("Invalid URL format, using raw input:", url);
     return url;
   }
 };
@@ -42,7 +43,10 @@ const metasploitScans = {
 app.post("/scan", async (req, res) => {
   const { url, tool, plan = "free" } = req.body;
 
+  console.log(`Received scan request | Tool: ${tool} | Plan: ${plan} | URL: ${url}`);
+
   if (!url || !tool) {
+    console.error("Missing required fields: URL or tool");
     return res.status(400).json({ message: "URL and tool are required." });
   }
 
@@ -54,33 +58,37 @@ app.post("/scan", async (req, res) => {
         ? `zap-full-scan.py -t ${url} -J zap-report.json`
         : `zap-baseline.py -t ${url} -J zap-report.json`;
 
+      console.log(`Starting ZAP (${plan}) scan using: ${zapScanScript}`);
+
       const zapCommand = `
         if [ "$(docker ps -a -q -f name=${zapContainerName})" ]; then
           if [ ! "$(docker ps -q -f name=${zapContainerName})" ]; then
-            docker start ${zapContainerName};
+            echo "Starting existing ZAP container..."; docker start ${zapContainerName};
           fi
         else
-          docker run --user root -d --name ${zapContainerName} --privileged -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-stable;
+          echo "Creating new ZAP container..."; docker run --user root -d --name ${zapContainerName} --privileged -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-stable;
         fi
-        docker exec ${zapContainerName} ${zapScanScript}
+        echo "Running scan inside ZAP container..."; docker exec ${zapContainerName} ${zapScanScript}
       `;
 
       exec(zapCommand, (error, stdout, stderr) => {
         if (error && error.code !== 2 && error.code !== 1) {
-          console.error(`ZAP Scan Error: ${error.message}`);
+          console.error("ZAP execution error:", error.message);
           return res.status(500).json({ message: "Error running ZAP scan", error: error.message });
         }
 
         fs.readFile(reportPath, "utf8", (err, data) => {
           if (err) {
+            console.error("Error reading ZAP report:", err.message);
             return res.status(500).json({ message: "Error reading ZAP report", error: err.message });
           }
 
           try {
             const jsonData = JSON.parse(data);
-            console.log(`Zap Scan Output:\n${stdout}`);
+            console.log("ZAP scan complete. Returning JSON report.");
             return res.status(200).json({ results: stdout, json_data: jsonData });
           } catch (parseError) {
+            console.error("Error parsing ZAP JSON report:", parseError.message);
             return res.status(500).json({ message: "Error parsing ZAP JSON", error: parseError.message });
           }
         });
@@ -88,11 +96,15 @@ app.post("/scan", async (req, res) => {
 
     } else if (tool === "nmap") {
       const sanitizedUrl = extractHostname(url);
+      console.log(`Starting Nmap scan for: ${sanitizedUrl}`);
+
       exec(`nmap -Pn ${sanitizedUrl}`, (error, stdout) => {
         if (error) {
+          console.error("Nmap error:", error.message);
           return res.status(500).json({ message: "Error running Nmap", error: error.message });
         }
-        console.log(`Nmap Scan Output:\n${stdout}`);
+
+        console.log("Nmap scan completed.");
         return res.status(200).json({ tool: "nmap", results: stdout });
       });
 
@@ -100,19 +112,25 @@ app.post("/scan", async (req, res) => {
       const modules = metasploitScans[plan] || metasploitScans["free"];
       const commands = modules.map(cmd => `${cmd} ${url}; run;`).join(" ") + "exit";
 
+      console.log(`Starting Metasploit scan (${plan}) with ${modules.length} modules.`);
+
       exec(`msfconsole -q -x "${commands}"`, (error, stdout) => {
         if (error) {
+          console.error("Metasploit scan error:", error.message);
           return res.status(500).json({ message: "Error running Metasploit", error: error.message });
         }
-        console.log(`Metasploit Scan Output:\n${stdout}`);
+
+        console.log("Metasploit scan complete.");
         return res.status(200).json({ tool: "metasploit", results: stdout });
       });
 
     } else {
+      console.error("Invalid scan tool selected.");
       return res.status(400).json({ message: "Unsupported tool." });
     }
 
   } catch (error) {
+    console.error("Unexpected server error:", error.message);
     return res.status(500).json({ message: "Unexpected scan error", error: error.message });
   }
 });
@@ -120,5 +138,5 @@ app.post("/scan", async (req, res) => {
 // Start Server
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
-app.listen(PORT, HOST, () => console.log(`Server running on http://${HOST}:${PORT}`));
+app.listen(PORT, HOST, () => console.log(`🚀 Server running on http://${HOST}:${PORT}`));
 
