@@ -56,7 +56,7 @@ const login = async (req, res) => {
       expires: new Date(Date.now() + 172800000), // 2 days
       maxAge: 172800000, // 2 days in milliseconds
     });
-    
+
 
     res.status(200).json({ 
       message: "Login successful", 

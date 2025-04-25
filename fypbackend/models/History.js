@@ -7,6 +7,12 @@ const UserSchema = new mongoose.Schema({
     required: [true, "url is required"],
     trim: true,
   },
+  pdfLink: {
+    type: String,
+    required: [true, "pdf url is required"],
+    trim: true,
+  }
+  ,
   id: {
     type: String,
     required: [true, "User Id is required"],
