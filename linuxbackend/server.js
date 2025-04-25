@@ -78,6 +78,7 @@ app.post("/scan", async (req, res) => {
 
           try {
             const jsonData = JSON.parse(data);
+            console.log(`Zap Scan Output:\n${stdout}`);
             return res.status(200).json({ results: stdout, json_data: jsonData });
           } catch (parseError) {
             return res.status(500).json({ message: "Error parsing ZAP JSON", error: parseError.message });
@@ -91,6 +92,7 @@ app.post("/scan", async (req, res) => {
         if (error) {
           return res.status(500).json({ message: "Error running Nmap", error: error.message });
         }
+        console.log(`Nmap Scan Output:\n${stdout}`);
         return res.status(200).json({ tool: "nmap", results: stdout });
       });
 
@@ -102,6 +104,7 @@ app.post("/scan", async (req, res) => {
         if (error) {
           return res.status(500).json({ message: "Error running Metasploit", error: error.message });
         }
+        console.log(`Metasploit Scan Output:\n${stdout}`);
         return res.status(200).json({ tool: "metasploit", results: stdout });
       });
 
