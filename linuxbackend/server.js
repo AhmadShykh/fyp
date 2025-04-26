@@ -52,7 +52,8 @@ app.post("/scan", async (req, res) => {
 
   try {
     if (tool === "zap") {
-      const reportPath = path.join(process.cwd(), "zap-report.json");
+      const reportPath = path.join("/zap-output", "zap-report.json");
+
       const zapContainerName = "zap-scanner";
       const zapScanScript = plan === "premium"
         ? `zap-full-scan.py -t ${url} -J zap-report.json`
@@ -66,7 +67,7 @@ app.post("/scan", async (req, res) => {
             echo "Starting existing ZAP container..."; docker start ${zapContainerName};
           fi
         else
-          echo "Creating new ZAP container..."; docker run --user root -d --name ${zapContainerName} --privileged -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-stable;
+          echo "Creating new ZAP container..."; docker run --user root -d --name ${zapContainerName} --privileged -v zap-output:/zap/wrk -t zaproxy/zap-stable;
         fi
         echo "Running scan inside ZAP container..."; docker exec ${zapContainerName} ${zapScanScript}
       `;
