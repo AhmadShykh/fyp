@@ -5,7 +5,7 @@ const User = require("../models/User");
 // Controller: Get All Websites (Admin Only)
 const getAllWebsites = async (req, res) => {
   try {
-    const websites = await History.find().select("url name"); // Return only necessary fields
+    const websites = await History.find().select("url name pdfLink"); // Return only necessary fields
     res.status(200).json(websites);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -30,7 +30,7 @@ const registerWebsite = async (req, res) => {
     }
 
     // Save website to history
-    const website = new History({ url, id: userId, name });
+    const website = new History({ url,pdfLink, id: userId, name,  });
     await website.save();
 
     res.status(201).json({ message: "Website registered successfully" });
@@ -50,7 +50,7 @@ const registerWebsite = async (req, res) => {
       }
 
       // Find websites saved by the user
-      const websites = await History.find({ id: userId }).select("url name");
+      const websites = await History.find({ id: userId }).select("url name pdfLink");
 
       if (!websites || websites.length === 0) {
         return res.status(404).json({ message: "No websites found for this user" });
