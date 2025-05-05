@@ -14,13 +14,17 @@ const getAllWebsites = async (req, res) => {
 
 // Controller: Register Website
 const registerWebsite = async (req, res) => {
-  const { url, name } = req.body;
+  const { url, name, pdfLink } = req.body;
   try {
     const userId = req.user.id;
 
     // Check if `userId` is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid User ID" });
+    }
+
+    if (!pdfLink || pdfLink.trim() === '') {
+      return res.status(400).json({ error: 'pdfLink is required and cannot be empty.' });
     }
 
     // Find user by MongoDB `_id` to verify existence
