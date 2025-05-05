@@ -22,13 +22,19 @@ const SideBar = () => {
     }
   };
 
+  const handleLogout = () => {
+    // Example: Clear auth tokens or user info
+
+    navigate("/LoginPage"); // Navigate to login
+  };
+
   return (
     <div className="bg-dark col-auto col-md-1 min-vh-100 d-flex flex-column align-items-center justify-content-center">
       <div>
         <ul className="nav nav-pills flex-column">
           <li className="nav-item">
             <a
-              href="#"
+              href="/DashboardPage"
               className={`nav-link ${selected === "dashboard" ? "active" : ""}`}
               onClick={() => handleNavigation("dashboard")}
             >
@@ -69,7 +75,7 @@ const SideBar = () => {
           />
         </a>
         <div className="dropdown-menu" aria-labelledby="triggerId">
-          <a className="dropdown-item" href="#">
+          <a className="dropdown-item" href="#" onClick={handleLogout}>
             Logout
           </a>
         </div>

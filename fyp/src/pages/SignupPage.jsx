@@ -1,6 +1,7 @@
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -9,11 +10,13 @@ const SignupPage = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
+  const navigate = useNavigate();
+
   const handleSignup = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.post("/api/auth/signup", {
+      await axios.post("http://localhost:8080/api/auth/signup", {
         name,
         email,
         contact,
@@ -21,8 +24,12 @@ const SignupPage = () => {
       });
       setMessage("Signup successful");
     } catch (error) {
-      setMessage(error.response.data.message || "Something went wrong");
+      setMessage(error.response?.data?.message || "Something went wrong");
     }
+  };
+
+  const goToLogin = () => {
+    navigate("/LoginPage");
   };
 
   return (
@@ -77,7 +84,11 @@ const SignupPage = () => {
           <button type="submit" className="btn btn-primary w-100">
             Sign Up
           </button>
-          <button type="submit" className="btn btn-secondary w-100 mt-2">
+          <button
+            type="button"
+            className="btn btn-secondary w-100 mt-2"
+            onClick={goToLogin}
+          >
             Back to Login
           </button>
           {message && (
