@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -64,6 +65,23 @@ const ProcessPage = () => {
 
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+    const saveToHistory = async () => {
+      try {
+        const title = new URL(scanData.url).hostname;
+        await axios.post(
+          "http://localhost:8080/api/history/functions/registerWebsite",
+          {
+            url: scanData.url,
+            name: title,
+            pdfLink: scanData.pdf_url,
+          },
+          { withCredentials: true },
+        );
+      } catch (err) {
+        console.error("Failed to save history:", err);
+      }
+    };
+
     const processScanResults = async () => {
       if (scanData.scan_results?.metasploit_output) {
         setScanResults((prev) => ({
@@ -85,14 +103,15 @@ const ProcessPage = () => {
         await delay(1000);
       }
 
-      // Process OWASP ZAP Output
       if (scanData.scan_results?.owasp_zap_output) {
         setScanResults((prev) => ({
           ...prev,
           owaspZap: scanData.scan_results.owasp_zap_output,
         }));
-        const extractedZapData = extractZapData(scanData.scan_results.owasp_zap_json_output); // Extract ZAP data
-        setZapData(extractedZapData); // Store extracted ZAP data
+        const extractedZapData = extractZapData(
+          scanData.scan_results.owasp_zap_json_output,
+        );
+        setZapData(extractedZapData);
         progressSteps++;
         setProgress(((progressSteps / totalSteps) * 100).toFixed(0));
         await delay(1000);
@@ -100,6 +119,11 @@ const ProcessPage = () => {
 
       if (scanData.pdf_url) {
         setPdfUrl(scanData.pdf_url);
+      }
+
+      console.log("url ", scanData.url, "pdf url ", scanData.pdf_url);
+      if (scanData.url && scanData.pdf_url) {
+        await saveToHistory();
       }
 
       setHeaderText("Scan Completed Successfully!");
