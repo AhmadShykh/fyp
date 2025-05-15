@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/alt-text */
+import axios from "axios";
 import "bootstrap/js/dist/dropdown";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,23 +16,31 @@ const SideBar = () => {
 
   const handleNavigation = (page) => {
     setSelected(page);
-
-    if (page === "dashboard") {
-      navigate("/DashboardPage");
-    } else if (page === "history") {
-      navigate("/HistoryPage");
-    } else if (page === "plans") {
-      navigate("/SubscriptionPlans");
-    }
+    navigate(`/${page === "dashboard" ? "DashboardPage" : "HistoryPage"}`);
   };
 
   const handleLogout = () => {
-    logout();
+    logout(); // Call logout from context
     navigate("/LoginPage");
   };
 
   const handleLogin = () => {
     navigate("/LoginPage");
+  };
+
+  const handleUpgrade = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/auth/profile",
+        { withCredentials: true },
+      );
+      const currentPlan = response.data?.subscription?.plan || "basic";
+      localStorage.setItem("currentPlan", currentPlan);
+      navigate("/SubscriptionPlans");
+      setSelected("upgrade");
+    } catch (error) {
+      console.error("Failed to fetch user profile:", error);
+    }
   };
 
   return (
@@ -69,17 +78,11 @@ const SideBar = () => {
           <li className="nav-item">
             <button
               className={`nav-link btn btn-link ${
-                selected === "plans" ? "active" : ""
+                selected === "upgrade" ? "active" : ""
               }`}
-              onClick={() => handleNavigation("plans")}
-              title="Upgrade Plan"
-              style={{
-                fontSize: "12px",
-                color: "white",
-                paddingTop: "10px",
-              }}
+              onClick={handleUpgrade}
             >
-              💎 Upgrade
+              Upgrade
             </button>
           </li>
         </ul>

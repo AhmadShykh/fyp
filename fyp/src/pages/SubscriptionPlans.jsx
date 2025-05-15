@@ -1,6 +1,6 @@
 // src/pages/SubscriptionPlans.js
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const plans = [
   { name: "basic", price: "Free", features: ["Limited scans"], color: "#ccc" },
@@ -20,16 +20,24 @@ const plans = [
 
 const SubscriptionPlans = () => {
   const [loading, setLoading] = useState(null);
-  const token = localStorage.getItem("token"); // Or however you manage auth
+  const [currentPlan, setCurrentPlan] = useState(null);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const storedPlan = localStorage.getItem("currentPlan");
+    if (storedPlan) {
+      setCurrentPlan(storedPlan);
+    }
+  }, []);
 
   const subscribe = async (plan) => {
     setLoading(plan);
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/subscription/subscribe", // Adjust if your backend route is different
+        "http://localhost:8080/api/subscription/subscribe",
         { plan },
-        { withCredentials: true },
         {
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -37,7 +45,7 @@ const SubscriptionPlans = () => {
       );
 
       if (res.data.url) {
-        window.location.href = res.data.url; // Stripe Checkout URL
+        window.location.href = res.data.url;
       } else {
         alert(res.data.message || "Subscribed successfully.");
       }
@@ -75,10 +83,19 @@ const SubscriptionPlans = () => {
                 <button
                   className="btn btn-primary"
                   onClick={() => subscribe(plan.name)}
-                  disabled={loading === plan.name}
+                  disabled={loading === plan.name || currentPlan === plan.name}
                 >
-                  {loading === plan.name ? "Processing..." : "Subscribe"}
+                  {currentPlan === plan.name
+                    ? "Current Plan"
+                    : loading === plan.name
+                    ? "Processing..."
+                    : "Subscribe"}
                 </button>
+                {currentPlan === plan.name && (
+                  <p className="text-success mt-2">
+                    You are currently on this plan
+                  </p>
+                )}
               </div>
             </div>
           </div>
