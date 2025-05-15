@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/alt-text */
+import axios from "axios";
 import "bootstrap/js/dist/dropdown";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,21 @@ const SideBar = () => {
 
   const handleLogin = () => {
     navigate("/LoginPage");
+  };
+
+  const handleUpgrade = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/auth/profile",
+        { withCredentials: true },
+      );
+      const currentPlan = response.data?.subscription?.plan || "basic";
+      localStorage.setItem("currentPlan", currentPlan);
+      navigate("/SubscriptionPlans");
+      setSelected("upgrade");
+    } catch (error) {
+      console.error("Failed to fetch user profile:", error);
+    }
   };
 
   return (
@@ -57,6 +73,16 @@ const SideBar = () => {
                 className="img-fluid"
                 style={{ width: "35px", height: "35px" }}
               />
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link btn btn-link ${
+                selected === "upgrade" ? "active" : ""
+              }`}
+              onClick={handleUpgrade}
+            >
+              Upgrade
             </button>
           </li>
         </ul>
