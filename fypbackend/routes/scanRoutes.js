@@ -5,6 +5,6 @@ const { authenticateToken } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 // Route for scanning websites
-router.post("/", authenticateToken,scanWebsiteAndGeneratePDF);
+router.post("/", scanWebsiteAndGeneratePDF);
 
 module.exports = router;
