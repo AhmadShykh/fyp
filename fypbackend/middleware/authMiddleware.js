@@ -5,9 +5,12 @@ require("dotenv").config();
 // JWT Authentication Middleware
 const authenticateToken = (req, res, next) => {
   const token = req.cookies?.accessToken; // Get the token from cookies
-  if (!token)
-
-    return res.status(401).json({ message: "Access Denied. No Token Provided." });
+  if (!token) {
+    console.log("Token not found");
+    return res
+      .status(401)
+      .json({ message: "Access Denied. No Token Provided." });
+  }
 
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
@@ -16,7 +19,9 @@ const authenticateToken = (req, res, next) => {
   } catch (err) {
     if (err.name === "TokenExpiredError") {
       // Handle expired token specifically
-      return res.status(401).json({ message: "Token Expired. Please log in again." });
+      return res
+        .status(401)
+        .json({ message: "Token Expired. Please log in again." });
     } else {
       // Handle other JWT errors (e.g., invalid token)
       return res.status(403).json({ message: "Invalid Token" });

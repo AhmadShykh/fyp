@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/alt-text */
 import "bootstrap/js/dist/dropdown";
 import React, { useState } from "react";
@@ -6,26 +5,26 @@ import { useNavigate } from "react-router-dom";
 import DashboardIcon from "../assets/dashboard-icon.svg";
 import HistoryIcon from "../assets/history-icon.svg";
 import UserIcon from "../assets/user-icon.svg";
+import { useAuth } from "../context/AuthContext";
 
 const SideBar = () => {
   const [selected, setSelected] = useState("dashboard");
-
   const navigate = useNavigate();
+
+  const { isAuthenticated, logout } = useAuth();
 
   const handleNavigation = (page) => {
     setSelected(page);
-
-    if (page === "dashboard") {
-      navigate("/DashboardPage");
-    } else if (page === "history") {
-      navigate("/HistoryPage");
-    }
+    navigate(`/${page === "dashboard" ? "DashboardPage" : "HistoryPage"}`);
   };
 
   const handleLogout = () => {
-    // Example: Clear auth tokens or user info
+    logout(); // Call logout from context
+    navigate("/LoginPage");
+  };
 
-    navigate("/LoginPage"); // Navigate to login
+  const handleLogin = () => {
+    navigate("/LoginPage");
   };
 
   return (
@@ -33,9 +32,10 @@ const SideBar = () => {
       <div>
         <ul className="nav nav-pills flex-column">
           <li className="nav-item">
-            <a
-              href="/DashboardPage"
-              className={`nav-link ${selected === "dashboard" ? "active" : ""}`}
+            <button
+              className={`nav-link btn btn-link ${
+                selected === "dashboard" ? "active" : ""
+              }`}
               onClick={() => handleNavigation("dashboard")}
             >
               <img
@@ -43,12 +43,13 @@ const SideBar = () => {
                 className="img-fluid"
                 style={{ width: "35px", height: "35px" }}
               />
-            </a>
+            </button>
           </li>
           <li className="nav-item">
-            <a
-              href="/HistoryPage"
-              className={`nav-link ${selected === "history" ? "active" : ""}`}
+            <button
+              className={`nav-link btn btn-link ${
+                selected === "history" ? "active" : ""
+              }`}
               onClick={() => handleNavigation("history")}
             >
               <img
@@ -56,13 +57,14 @@ const SideBar = () => {
                 className="img-fluid"
                 style={{ width: "35px", height: "35px" }}
               />
-            </a>
+            </button>
           </li>
         </ul>
       </div>
-      <div className="dropdown dropup">
-        <a
-          className="dropdown-toggle"
+
+      <div className="dropdown dropup mt-auto">
+        <button
+          className="dropdown-toggle btn btn-link"
           type="button"
           id="triggerId"
           data-bs-toggle="dropdown"
@@ -73,12 +75,22 @@ const SideBar = () => {
             className="img-fluid"
             style={{ width: "35px", height: "35px" }}
           />
-        </a>
+        </button>
         <div className="dropdown-menu" aria-labelledby="triggerId">
-          <a className="dropdown-item" href="#" onClick={handleLogout}>
-            Logout
-          </a>
+          {isAuthenticated ? (
+            <button className="dropdown-item" onClick={handleLogout}>
+              Logout
+            </button>
+          ) : (
+            <button className="dropdown-item" onClick={handleLogin}>
+              Login
+            </button>
+          )}
         </div>
+      </div>
+
+      <div>
+        <p className="text-white mt-3">Anas</p>
       </div>
     </div>
   );

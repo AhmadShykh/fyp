@@ -1,7 +1,6 @@
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -9,22 +8,17 @@ const LoginPage = () => {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", {
-        email,
-        password,
-      });
+    const result = await login(email, password);
 
-      if (res) {
-        console.log("Login response ", res);
-        navigate("/");
-      }
-      setMessage("Login successful");
-    } catch (error) {
-      setMessage("Something went wrong");
+    if (result.success) {
+      console.log("Login Success", result);
+      navigate("/");
+    } else {
+      setMessage("Invalid email or password");
     }
   };
 
@@ -71,7 +65,7 @@ const LoginPage = () => {
         >
           Sign Up
         </button>
-        {message && <p className="mt-3 text-center text-success">{message}</p>}
+        {message && <p className="mt-3 text-center text-danger">{message}</p>}
       </form>
     </div>
   );

@@ -7,8 +7,7 @@ const historyRoutes = require("./routes/historyRoutes");
 const scanRoutes = require("./routes/scanRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes.js");
 
-const cookieParser = require('cookie-parser');
-
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 
@@ -26,20 +25,24 @@ app.use((req, res, next) => {
   }
 });
 
-
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // your frontend origin
+    credentials: true, // allow cookies
+  }),
+);
 app.use(cookieParser());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+  .catch((err) => console.log(err));
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/history/functions/" , historyRoutes);
+app.use("/api/history/functions/", historyRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/api/subscription", subscriptionRoutes);
-
 
 // Start Server
 const PORT = process.env.PORT || 5000;
