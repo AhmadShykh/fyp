@@ -7,29 +7,72 @@ import TopVulnerabilitiesChart from "../components/TopVulnerabilitiesChart";
 
 const DashboardPage = () => {
   const location = useLocation();
-  const { zapData } = location.state || {
-    zapData: {
-      alertDistribution: { High: 0, Medium: 0, Low: 0, Informational: 0 },
-      riskScore: 0,
-      topVulnerabilities: [],
-      alertDetails: [],
-    },
+  const { scanResult } = location.state || {};
+
+  const parseZapData = (zapJson) => {
+    const alerts = zapJson?.site?.[0]?.alerts || [];
+
+    const alertDistribution = {
+      High: 0,
+      Medium: 0,
+      Low: 0,
+      Informational: 0,
+    };
+
+    const alertDetails = alerts.map((alert) => {
+      const risk = alert.riskdesc?.toLowerCase();
+      if (risk.includes("high")) alertDistribution.High++;
+      else if (risk.includes("medium")) alertDistribution.Medium++;
+      else if (risk.includes("low")) alertDistribution.Low++;
+      else alertDistribution.Informational++;
+
+      return {
+        rule: alert.name,
+        severity: alert.riskdesc,
+        riskScore: parseInt(alert.riskcode) * 25, // Example conversion
+        reason: alert.desc?.replace(/<[^>]*>?/gm, "").slice(0, 100),
+        hostname: alert.instances?.[0]?.uri || "Unknown",
+      };
+    });
+
+    const riskScore =
+      alertDetails.reduce((sum, a) => sum + a.riskScore, 0) /
+      (alertDetails.length || 1);
+
+    const topVulnerabilities = alertDetails
+      .sort((a, b) => b.riskScore - a.riskScore)
+      .slice(0, 5)
+      .map((vuln) => ({
+        name: vuln.rule,
+        value: vuln.riskScore,
+      }));
+
+    return {
+      alertDistribution,
+      riskScore,
+      topVulnerabilities,
+      alertDetails,
+    };
   };
+
+  const zapData = parseZapData(
+    scanResult?.scan_results?.owasp_zap_json_output || {},
+  );
 
   const { alertDistribution, riskScore, topVulnerabilities, alertDetails } =
     zapData;
 
   const highPercentage = Math.round(
-    (alertDistribution.High / alertDetails.length) * 100,
+    (alertDistribution.High / (alertDetails.length || 1)) * 100,
   );
   const mediumPercentage = Math.round(
-    (alertDistribution.Medium / alertDetails.length) * 100,
+    (alertDistribution.Medium / (alertDetails.length || 1)) * 100,
   );
   const lowPercentage = Math.round(
-    (alertDistribution.Low / alertDetails.length) * 100,
+    (alertDistribution.Low / (alertDetails.length || 1)) * 100,
   );
   const informationalPercentage = Math.round(
-    (alertDistribution.Informational / alertDetails.length) * 100,
+    (alertDistribution.Informational / (alertDetails.length || 1)) * 100,
   );
 
   return (
@@ -51,6 +94,7 @@ const DashboardPage = () => {
         <div>
           <div style={{ width: "100%", padding: 16 }}>
             <AlertDistributionChart data={alertDistribution} />
+
             <div
               style={{ flexDirection: "row", display: "flex", marginTop: 16 }}
             >
@@ -76,6 +120,7 @@ const DashboardPage = () => {
               />
               <div style={{ width: "3%" }} />
             </div>
+
             <div style={{ flexDirection: "row", display: "flex" }}>
               <GraphLegend
                 percentage={informationalPercentage}
@@ -85,11 +130,7 @@ const DashboardPage = () => {
               />
             </div>
 
-            <div
-              style={{
-                marginTop: 32,
-              }}
-            >
+            <div style={{ marginTop: 32 }}>
               Risk Score:
               <RiskScoreChart percentage={Math.round(riskScore)} />
             </div>
@@ -100,60 +141,45 @@ const DashboardPage = () => {
           <div style={{ width: "100%", padding: 16 }}>
             <TopVulnerabilitiesChart data={topVulnerabilities} />
           </div>
-          {/* 
-          <div style={{ marginTop: 32 }}>Alerts:</div>
-
-          <div
-            style={{
-              flexDirection: "row",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              Timeline
-              {alertDetails.map((alert, index) => (
-                <div key={index}>{new Date().toLocaleDateString()}</div>
-              ))}
-            </div>
-
-            <div style={{ marginLeft: 4, textAlign: "center" }}>
-              Rule
-              {alertDetails.map((alert, index) => (
-                <div key={index}>{alert.rule}</div>
-              ))}
-            </div>
-
-            <div style={{ textAlign: "center" }}>
-              Severity
-              {alertDetails.map((alert, index) => (
-                <div key={index}>{alert.severity}</div>
-              ))}
-            </div>
-
-            <div style={{ marginLeft: 4, textAlign: "center" }}>
-              Risk Score
-              {alertDetails.map((alert, index) => (
-                <div key={index}>{alert.riskScore}</div>
-              ))}
-            </div>
-
-            <div style={{ marginLeft: 4, textAlign: "center" }}>
-              Reason
-              {alertDetails.map((alert, index) => (
-                <div key={index}>{alert.reason}</div>
-              ))}
-            </div>
-
-            <div style={{ marginLeft: 4, textAlign: "center" }}>
-              Hostname
-              {alertDetails.map((alert, index) => (
-                <div key={index}>{alert.hostname}</div>
-              ))}
-            </div>
-          </div> */}
         </div>
+      </div>
+
+      {/* Bonus: Raw scan outputs */}
+      <div
+        style={{
+          background: "#fff",
+          padding: 24,
+          marginTop: 32,
+          borderRadius: 8,
+        }}
+      >
+        <h5>Metasploit Output</h5>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            maxHeight: 200,
+            overflowY: "auto",
+            backgroundColor: "#f8f9fa",
+            padding: 16,
+            borderRadius: 6,
+          }}
+        >
+          {scanResult?.scan_results?.metasploit_output || "No output available"}
+        </pre>
+
+        <h5 style={{ marginTop: 24 }}>Nmap Output</h5>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            maxHeight: 200,
+            overflowY: "auto",
+            backgroundColor: "#f8f9fa",
+            padding: 16,
+            borderRadius: 6,
+          }}
+        >
+          {scanResult?.scan_results?.nmap_output || "No output available"}
+        </pre>
       </div>
     </div>
   );
