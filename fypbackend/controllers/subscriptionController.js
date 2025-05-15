@@ -75,6 +75,7 @@ exports.subscribeUser = async (req, res) => {
 
 // Stripe Webhook to Handle Payment Events
 exports.stripeWebhook = async (req, res) => {
+  console.log("Received Stripe webhook event");
   let event;
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
