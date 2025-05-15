@@ -15,11 +15,18 @@ const SideBar = () => {
 
   const handleNavigation = (page) => {
     setSelected(page);
-    navigate(`/${page === "dashboard" ? "DashboardPage" : "HistoryPage"}`);
+
+    if (page === "dashboard") {
+      navigate("/DashboardPage");
+    } else if (page === "history") {
+      navigate("/HistoryPage");
+    } else if (page === "plans") {
+      navigate("/SubscriptionPlans");
+    }
   };
 
   const handleLogout = () => {
-    logout(); // Call logout from context
+    logout();
     navigate("/LoginPage");
   };
 
@@ -57,6 +64,22 @@ const SideBar = () => {
                 className="img-fluid"
                 style={{ width: "35px", height: "35px" }}
               />
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link btn btn-link ${
+                selected === "plans" ? "active" : ""
+              }`}
+              onClick={() => handleNavigation("plans")}
+              title="Upgrade Plan"
+              style={{
+                fontSize: "12px",
+                color: "white",
+                paddingTop: "10px",
+              }}
+            >
+              💎 Upgrade
             </button>
           </li>
         </ul>
